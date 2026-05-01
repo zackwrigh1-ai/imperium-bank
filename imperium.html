@@ -1,2095 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>IMPERIUM • FULL ROMAN COMMAND SYSTEM</title>
-<style>
-/* =========================
-   IMPERIUM ROMAN UI SYSTEM
-   SINGLE FILE ENTERPRISE SIM
-   ========================= */
-
-body{
-margin:0;
-font-family:'Georgia',serif;
-background:radial-gradient(circle at top,#1a1208,#050505 70%);
-color:#d4af37;
-overflow-x:hidden;
-}
-
-header{
-background:linear-gradient(90deg,#0c0a08,#1b140a,#0c0a08);
-border-bottom:2px solid #d4af37;
-padding:18px;
-text-align:center;
-box-shadow:0 0 25px rgba(212,175,55,0.2);
-}
-
-header h1{
-margin:0;
-letter-spacing:3px;
-font-size:20px;
-}
-
-nav{
-display:flex;
-justify-content:center;
-gap:10px;
-flex-wrap:wrap;
-margin-top:10px;
-}
-
-nav button{
-background:linear-gradient(180deg,#3a2a10,#1a1208);
-border:1px solid #d4af37;
-color:#d4af37;
-padding:10px 14px;
-cursor:pointer;
-font-weight:bold;
-}
-
-nav button:hover{transform:scale(1.05);}
-
-.container{max-width:1200px;margin:auto;padding:20px;}
-
-.panel{
-background:linear-gradient(180deg,#14110c,#0b0a08);
-border:1px solid #3a2a10;
-padding:20px;margin:15px 0;border-radius:6px;
-}
-
-.panel h2{margin-top:0;border-bottom:1px solid #3a2a10;padding-bottom:10px;}
-
-input,select{
-background:#0b0a08;
-border:1px solid #3a2a10;
-color:#d4af37;
-padding:8px;
-margin:5px;
-}
-
-button.action{
-background:#2a1d0a;
-border:1px solid #d4af37;
-color:#d4af37;
-padding:8px 12px;
-cursor:pointer;
-}
-
-.card{
-background:#120f0b;
-border-left:3px solid #d4af37;
-padding:10px;
-margin:10px 0;
-}
-
-.authPanel{
-background:linear-gradient(180deg,#2a1d0a,#1a1208);
-border:2px solid #d4af37;
-padding:15px;
-margin:15px 0;
-border-radius:6px;
-text-align:center;
-}
-
-.authPanel input{width:200px;}
-
-.authStatus{
-font-weight:bold;
-margin:10px 0;
-}
-
-.authStatus.locked{color:#ff6b6b;}
-
-.authStatus.unlocked{color:#51cf66;}
-
-.hidden{display:none;}
-.log{font-size:12px;color:#a88a3a;max-height:200px;overflow:auto;}
-</style>
+  <meta charset="UTF-8" />
+  <title>Imperium Bank • Roman Aurum System</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(180deg,#100b05,#1b170c); color: #f6e3a1; }
+    header { background: #1f1910; border-bottom: 2px solid #f6e3a1; padding: 16px; text-align: center; }
+    header h1 { margin: 0; letter-spacing: 2px; font-size: 24px; }
+    nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
+    nav button { border: 1px solid #c59d4d; background: #2b2414; color: #f6e3a1; padding: 10px 14px; cursor: pointer; border-radius: 6px; transition: transform .15s ease; }
+    nav button:hover { transform: translateY(-1px); background: #3b3018; }
+    .container { max-width: 1200px; margin: auto; padding: 20px; }
+    .panel { display: none; background: rgba(15,12,6,.95); border: 1px solid #3d2f13; border-radius: 10px; padding: 20px; margin-bottom: 18px; }
+    .panel.active { display: block; }
+    .panel h2 { margin-top: 0; border-bottom: 1px solid #3d2f13; padding-bottom: 12px; }
+    .card { background: #1d1710; border: 1px solid #3d2f13; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+    .card-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 14px; }
+    label { display: block; margin-bottom: 6px; font-size: 0.95rem; color: #d8c48f; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #3d2f13; border-radius: 8px; background: #12100a; color: #f5e6ab; }
+    button.action { border: none; border-radius: 8px; background: linear-gradient(180deg,#b68f3c,#8f6d20); color: #111; padding: 10px 14px; cursor: pointer; font-weight: 700; margin-top: 8px; }
+    button.action:hover { opacity: .95; }
+    .log { max-height: 320px; overflow-y: auto; background: #110f0a; padding: 14px; border: 1px solid #3d2f13; border-radius: 8px; font-size: 0.92rem; line-height: 1.5; }
+    .status { display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(246,227,161,.15); color: #f6e3a1; font-weight: 700; }
+    .small { font-size: 0.95rem; opacity: .85; }
+    .wide-button { width: 100%; }
+    footer { text-align:center; padding:16px; color:#a08846; font-size:.88rem; }
+    @media (max-width: 640px) { nav { flex-direction: column; } }
+  </style>
 </head>
 <body>
-<header>
-<h1>IMPERIUM • FULL ROMAN COMMAND SYSTEM</h1>
-<nav>
-<button onclick="show('legions')">Aurum Branches</button>
-<button onclick="show('treasury')">Fiscus</button>
-<button onclick="show('exchange')">Aurum Exchange</button>
-<button onclick="show('campaign')">Campaign Ledgers</button>
-<button onclick="show('works')">Public Works</button>
-<button onclick="show('imperial')">Imperial Console</button>
-<button onclick="show('payroll')">Tribute</button>
-<button onclick="show('senate')">Senate</button>
-<button onclick="show('logs')">Oracle Logs</button>
-<button onclick="show('admin')">Admin</button>
-</nav>
-</header>
-<div class="authPanel">
-<div><strong>System Access Protection</strong></div>
-<div class="authStatus locked" id="authStatus">🔒 LOCKED - Enter password to edit</div>
-<div>
-<input id="masterPassword" type="password" placeholder="Enter master password" />
-<button class="action" onclick="authenticateUser()">Unlock Editing</button>
-<button class="action" onclick="lockSystem()">Lock System</button>
-</div>
-</div>
-<div class="container">
-<section id="legions" class="panel">
-<h2>Aurum Branches</h2>
-<div>
-<input id="accName" placeholder="New branch name" />
-<button class="action" onclick="createBranch()">Forge Branch</button>
-</div>
-<div id="accountsList"></div>
-</section>
-<section id="treasury" class="panel hidden">
-<h2>Treasury</h2>
-<div id="treasuryTotal">Imperial Treasury: 0</div>
-<div id="treasuryStatus" class="card">Loading treasury status...</div>
-<div>
-<input id="treasuryAdd" type="number" placeholder="Deposit to treasury" />
-<button class="action" onclick="depositTreasury()">Add to Treasury</button>
-</div>
-<div>
-<input id="treasuryWithdraw" type="number" placeholder="Withdraw from treasury" />
-<button class="action" onclick="withdrawTreasury()">Withdraw</button>
-</div>
-<div>
-<input id="transferBranchId" placeholder="Branch ID" />
-<input id="transferAmount" type="number" placeholder="Amount" />
-<button class="action" onclick="transferToBranch()">Transfer to Branch</button>
-</div>
-<div>
-<input id="interestRate" type="number" step="0.01" placeholder="Interest rate %" />
-<button class="action" onclick="setInterestRate()">Set Interest Rate</button>
-<button class="action" onclick="applyTreasuryInterest()">Apply Interest</button>
-</div>
-<div>
-<button class="action" onclick="runPayrollImmediate()">Execute Distributions Now</button>
-<button class="action" onclick="clearDistributions()">Clear Distribution Queue</button>
-</div>
-<div class="card">
-<h3>Treasury History</h3>
-<div id="treasuryHistory"></div>
-</div>
-</section>
-<section id="imperial" class="panel hidden">
-<h2>Imperial Console</h2>
-<div>
-<input id="citizenName" placeholder="New citizen name" />
-<button class="action" onclick="registerCitizen()">Register Citizen</button>
-<button class="action" onclick="enterImperium()">Enter Empire</button>
-<button class="action" onclick="exitImperium()">Exit Empire</button>
-</div>
-<div>
-<select id="rankSelect" onchange="setCurrentRank(this.value)">
-<option>Citizen</option>
-<option>Tribune</option>
-<option>Senator</option>
-<option>Consul</option>
-<option selected>Emperor</option>
-</select>
-<button class="action" onclick="setCurrentRank(document.getElementById('rankSelect').value)">Set Rank</button>
-</div>
-<div class="card">
-<div>Current rank: <span id="currentRankDisplay">Emperor</span></div>
-<div>Imperial stability: <span id="empireStability">100</span></div>
-<div>Total citizen wealth: <span id="empireWealth">0</span></div>
-<div>Active policies: <span id="empirePoliciesCount">0</span></div>
-</div>
-<div class="card">
-<h3>Citizen Hall</h3>
-<div id="citizenList"></div>
-</div>
-<div class="card">
-<h3>Imperial Edicts</h3>
-<input id="policyName" placeholder="Edict name" />
-<input id="policyEffect" placeholder="Effect summary" />
-<button class="action" onclick="declarePolicy()">Declare Policy</button>
-<div id="policyList"></div>
-</div>
-<div class="card" id="empireStatus"></div>
-</section>
-<section id="payroll" class="panel hidden">
-<h2>Tribute</h2>
-<div>
-<input id="payId" placeholder="Branch ID" />
-<input id="payAmount" type="number" placeholder="Amount" />
-<button class="action" onclick="queueDistribution()">Queue Tribute</button>
-</div>
-<div id="payrollList"></div>
-<div class="card">
-<h3>Tribute Collection</h3>
-<input id="tributeBranchId" placeholder="Branch ID" />
-<input id="tributeAmount" type="number" placeholder="Amount (leave blank to use rate)" />
-<button class="action" onclick="collectTributeFromBranch()">Collect Tribute</button>
-</div>
-<div class="card">
-<input id="tributeRate" type="number" step="0.1" placeholder="Tribute rate %" />
-<button class="action" onclick="updateTributeRate()">Set Tribute Rate</button>
-<button class="action" onclick="enforceTribute()">Enforce Tribute</button>
-<div id="tributeLedger"></div>
-</div>
-</section>
-<section id="exchange" class="panel hidden">
-<h2>Aurum Exchange</h2>
-<div class="card">
-<h3>Merchant Contracts</h3>
-<div>
-<input id="instrumentsName" placeholder="Instrument name" />
-<input id="instrumentsAmount" type="number" placeholder="Value" />
-<button class="action" onclick="issueInstrument()">Issue Bond</button>
-</div>
-<div>
-<input id="loanRequestName" placeholder="Loan borrower" />
-<input id="loanRequestAmount" type="number" placeholder="Loan amount" />
-<button class="action" onclick="requestLoan()">Request Loan</button>
-</div>
-<div>
-<select id="exchangeRateSelect" onchange="setExchangeRate(this.value)"></select>
-<button class="action" onclick="applyExchangeRate()">Refresh Rates</button>
-</div>
-<div id="exchangeList"></div>
-</div>
-</section>
+  <header>
+    <h1>IMPERIUM BANK • AURUM COMMAND</h1>
+    <nav>
+      <button onclick="switchView('legions')">Aurum Branches</button>
+      <button onclick="switchView('tribute')">Tribute</button>
+      <button onclick="switchView('senate')">Senate</button>
+      <button onclick="switchView('logs')">Oracle Logs</button>
+      <button onclick="switchView('admin')">Admin</button>
+    </nav>
+  </header>
 
-<section id="campaign" class="panel hidden">
-<h2>Campaign Ledgers</h2>
-<div class="card">
-<h3>Campaign Finance</h3>
-<div>
-<input id="campaignName" placeholder="Campaign name" />
-<input id="campaignBudget" type="number" placeholder="Budget" />
-<button class="action" onclick="launchCampaign()">Launch Campaign</button>
-</div>
-<div>
-<input id="campaignFundId" placeholder="Campaign ID" />
-<input id="campaignFundAmount" type="number" placeholder="Top-up amount" />
-<button class="action" onclick="fundCampaign()">Fund Campaign</button>
-</div>
-<div id="campaignList"></div>
-</div>
-</section>
-<section id="works" class="panel hidden">
-<h2>Public Works</h2>
-<div class="card">
-<h3>Bank-Funded Projects</h3>
-<div>
-<input id="workName" placeholder="Project name" />
-<input id="workBudget" type="number" placeholder="Budget" />
-<button class="action" onclick="proposeWork()">Propose Work</button>
-</div>
-<div>
-<input id="workId" placeholder="Project ID" />
-<input id="workProgressAmount" type="number" placeholder="Invest amount" />
-<button class="action" onclick="investInWork()">Invest</button>
-</div>
-<div id="workList"></div>
-<div id="projectStatus"></div>
-</div>
-</section>
-<section id="senate" class="panel hidden">
-<h2>Senate</h2>
-<div>
-<button class="action" onclick="vote('yes')">Vote Yes</button>
-<button class="action" onclick="vote('no')">Vote No</button>
-</div>
-<div class="card">Yes: <span id="senateYes">0</span> | No: <span id="senateNo">0</span></div>
-<div class="card">
-<h3>Senate Assembly Maker</h3>
-<input id="assemblyName" placeholder="Assembly name" />
-<input id="assemblyDescription" placeholder="Assembly description" />
-<button class="action" onclick="createAssembly()">Create Assembly</button>
-<div id="assemblyList"></div>
-<div id="currentAssemblyDisplay">No assembly selected.</div>
-</div>
-</section>
-<section id="logs" class="panel hidden">
-<h2>Oracle Logs</h2>
-<div id="logBox" class="log"></div>
-</section>
-<section id="admin" class="panel hidden">
-<h2>Imperial Admin</h2>
-<div id="adminLoginPanel">
-<input id="adminPassword" type="password" placeholder="Enter admin password" />
-<button class="action" onclick="adminLogin()">Unlock Admin</button>
-</div>
-<div id="adminControls" class="hidden">
-<p id="adminStatus">Admin access granted.</p>
-<button class="action" onclick="auditEmpire()">Audit Empire</button>
-<button class="action" onclick="resetTreasury(5000)">Reset Treasury 5000</button>
-<button class="action" onclick="moveToEmergencyReserve(1000)">Emergency Reserve +1000</button>
-<button class="action" onclick="toggleSenateLock()">Toggle Senate Lock</button>
-<div>
-<input id="freezeBranchId" placeholder="Branch ID" />
-<button class="action" onclick="freezeBranch()">Freeze Branch</button>
-<button class="action" onclick="unfreezeBranch()">Unfreeze Branch</button>
-</div>
-<div>
-<button class="action" onclick="exportEmpireState()">Export Empire State</button>
-</div>
-<div id="adminAuditOutput"></div>
-<button class="action" onclick="adminLogout()">Lock Admin</button>
-</div>
-</section>
-</div>
-<script>
-/* =========================
-   DATA LAYER (LOCAL STORAGE)
-   ========================= */
-let accounts = JSON.parse(localStorage.getItem("accounts") || "{}");
-let logs = JSON.parse(localStorage.getItem("logs") || "[]");
-let payrolls = JSON.parse(localStorage.getItem("payrolls") || "[]");
-let treasury = Number(localStorage.getItem("treasury") || 2000);
-let treasuryHistory = JSON.parse(localStorage.getItem("treasuryHistory") || "[]");
-let treasuryInterest = Number(localStorage.getItem("treasuryInterest") || 0.05);
-let senate = {proposal:null,yes:0,no:0};
-
-let citizens = JSON.parse(localStorage.getItem("citizens") || "[]");
-let policies = JSON.parse(localStorage.getItem("policies") || "[]");
-let bankInstruments = JSON.parse(localStorage.getItem("bankInstruments") || "[]");
-let loanRequests = JSON.parse(localStorage.getItem("loanRequests") || "[]");
-let provinces = JSON.parse(localStorage.getItem("provinces") || "[]");
-let vaultHealth = Number(localStorage.getItem("vaultHealth") || 88);
-let tradeRoutes = JSON.parse(localStorage.getItem("tradeRoutes") || "[]");
-let campaigns = JSON.parse(localStorage.getItem("campaigns") || "[]");
-let works = JSON.parse(localStorage.getItem("works") || "[]");
-let bankEvents = JSON.parse(localStorage.getItem("bankEvents") || "[]");
-let exchangeRates = JSON.parse(localStorage.getItem("exchangeRates") || "[]");
-let currentExchangeSymbol = localStorage.getItem("currentExchangeSymbol") || "Aurum";
-let bankReports = JSON.parse(localStorage.getItem("bankReports") || "[]");
-let stateHistory = JSON.parse(localStorage.getItem("stateHistory") || "[]");
-let eventLevel = Number(localStorage.getItem("eventLevel") || 1);
-
-if(Object.keys(accounts).length === 0){
-  accounts = {
-    legio1: {id:'legio1', name:'Legio I', balance:550, rank:'Legion'},
-    legio2: {id:'legio2', name:'Legio II', balance:420, rank:'Legion'},
-    legio3: {id:'legio3', name:'Legio III', balance:630, rank:'Legion'}
-  };
-}
-if(citizens.length === 0){
-  citizens = [
-    {id:'citizen1',name:'Aurelia',role:'Senator',wealth:320},
-    {id:'citizen2',name:'Gaius',role:'Tribune',wealth:210},
-    {id:'citizen3',name:'Marcellus',role:'Citizen',wealth:140}
-  ];
-}
-if(provinces.length === 0){
-  provinces = [
-    {id:'prov1',name:'Italia',wealth:1200,taxRate:12,grain:400,loyalty:92, vault:1200}
-  ];
-}
-if(exchangeRates.length === 0){
-  exchangeRates = [
-    {symbol:'Aurum',rate:1,source:'Imperial Ledger'},
-    {symbol:'Denarius',rate:0.24,source:'Bank Exchange'},
-    {symbol:'Drachma',rate:0.18,source:'Provincial Market'},
-    {symbol:'Talent',rate:0.67,source:'Eastern Trade'}
-  ];
-}
-if(bankInstruments.length === 0){
-  bankInstruments = [
-    {id:'bond1',name:'Aurum Bond',amount:500,term:12,rate:6,issued:new Date().toISOString()},
-    {id:'loan1',name:'Mercantile Loan',amount:300,term:8,rate:9,issued:new Date().toISOString()}
-  ];
-}
-if(tradeRoutes.length === 0){
-  tradeRoutes = [
-    {id:'route1',name:'Silk Road Extension',yield:70,status:'active'},
-    {id:'route2',name:'Mediterranean Convoy',yield:55,status:'active'},
-    {id:'route3',name:'African Grain Passage',yield:60,status:'delayed'}
-  ];
-}
-if(campaigns.length === 0){
-  campaigns = [
-    {id:'camp1',name:'Danube Guard',budget:800,spent:240,status:'rising',turns:3},
-    {id:'camp2',name:'Pictish Winter',budget:600,spent:460,status:'stalled',turns:1}
-  ];
-}
-if(works.length === 0){
-  works = [
-    {id:'work1',name:'Aqua Claudia',budget:1000,progress:420,status:'building'},
-    {id:'work2',name:'Via Appia',budget:920,progress:760,status:'almost complete'}
-  ];
-}
-
-let currentRank = "Emperor";
-let adminPassword = "imperium";
-let adminAuthenticated = false;
-let tributeRate = Number(localStorage.getItem("tributeRate") || 10);
-let tributeLedger = JSON.parse(localStorage.getItem("tributeLedger") || "[]");
-let frozenBranches = JSON.parse(localStorage.getItem("frozenBranches") || "[]");
-let empireEvents = JSON.parse(localStorage.getItem("empireEvents") || "[]");
-let senateLocked = localStorage.getItem("senateLocked") === "true";
-let lastAudit = JSON.parse(localStorage.getItem("lastAudit") || "{}");
-let senateAssemblies = JSON.parse(localStorage.getItem("senateAssemblies") || "[]");
-let currentSenateAssembly = localStorage.getItem("currentSenateAssembly") || null;
-
-function save(){
-  localStorage.setItem("accounts",JSON.stringify(accounts));
-  localStorage.setItem("logs",JSON.stringify(logs));
-  localStorage.setItem("payrolls",JSON.stringify(payrolls));
-  localStorage.setItem("treasury",String(treasury));
-  localStorage.setItem("treasuryHistory",JSON.stringify(treasuryHistory));
-  localStorage.setItem("treasuryInterest",String(treasuryInterest));
-  localStorage.setItem("citizens",JSON.stringify(citizens));
-  localStorage.setItem("policies",JSON.stringify(policies));
-  localStorage.setItem("bankInstruments",JSON.stringify(bankInstruments));
-  localStorage.setItem("loanRequests",JSON.stringify(loanRequests));
-
-  localStorage.setItem("tradeRoutes",JSON.stringify(tradeRoutes));
-  localStorage.setItem("campaigns",JSON.stringify(campaigns));
-  localStorage.setItem("works",JSON.stringify(works));
-  localStorage.setItem("bankEvents",JSON.stringify(bankEvents));
-  localStorage.setItem("exchangeRates",JSON.stringify(exchangeRates));
-  localStorage.setItem("currentExchangeSymbol",currentExchangeSymbol);
-  localStorage.setItem("bankReports",JSON.stringify(bankReports));
-  localStorage.setItem("stateHistory",JSON.stringify(stateHistory));
-  localStorage.setItem("eventLevel",String(eventLevel));
-  localStorage.setItem("tributeRate",String(tributeRate));
-  localStorage.setItem("tributeLedger",JSON.stringify(tributeLedger));
-  localStorage.setItem("frozenBranches",JSON.stringify(frozenBranches));
-  localStorage.setItem("empireEvents",JSON.stringify(empireEvents));
-  localStorage.setItem("senateLocked",String(senateLocked));
-  localStorage.setItem("lastAudit",JSON.stringify(lastAudit));
-  localStorage.setItem("senateAssemblies",JSON.stringify(senateAssemblies));
-  localStorage.setItem("currentSenateAssembly",currentSenateAssembly || "");
-}
-
-/* =========================
-   LOG SYSTEM
-   ========================= */
-function log(msg){
-  logs.push("⚔ "+msg);
-  if(logs.length > 200) logs.shift();
-  save();
-  renderLogs();
-}
-
-function renderLogs(){
-  document.getElementById("logBox").innerHTML = logs.join("<br>");
-}
-
-/* =========================
-   NAVIGATION
-   ========================= */
-function isSenator(){
-  return currentRank === 'Senator' || currentRank === 'Emperor';
-}
-
-function show(id){
-  if((id === 'legions' || id === 'treasury' || id === 'exchange' || id === 'campaign' || id === 'works') && !isSenator()){
-    log('Access denied: only senators may manage advanced imperial systems.');
-    id = 'imperial';
-  }
-  ['legions','treasury','exchange','campaign','works','imperial','payroll','senate','logs','admin'].forEach(x => document.getElementById(x).classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-
-/* =========================
-   AUTH (SIMULATED)
-   ========================= */
-function enterImperium(){
-  log("Imperial court convened.");
-  renderEmpireConsole();
-}
-function register(){
-  registerCitizen();
-}
-function exitImperium(){
-  log("Imperial court dismissed.");
-}
-
-function adminLogin(){
-  const attempt = document.getElementById('adminPassword').value;
-  if(attempt === adminPassword){
-    adminAuthenticated = true;
-    document.getElementById('adminPassword').value = '';
-    updateAdminDisplay();
-    renderAdminPanel();
-    log('Admin access granted.');
-  } else {
-    log('Admin password incorrect.');
-  }
-}
-
-function adminLogout(){
-  adminAuthenticated = false;
-  updateAdminDisplay();
-  log('Admin access revoked.');
-}
-
-function updateAdminDisplay(){
-  document.getElementById('adminControls').classList.toggle('hidden', !adminAuthenticated);
-  document.getElementById('adminLoginPanel').classList.toggle('hidden', adminAuthenticated);
-  renderAdminPanel();
-}
-
-/* =========================
-   ACCOUNT SYSTEM
-   ========================= */
-function createBranch(){
-  if(!isSenator()) return log('Only senators may create branches.');
-  const id = 'aurum' + (Object.keys(accounts).length + 1);
-  const name = document.getElementById("accName").value.trim();
-  if(!name){ return log("Please enter a branch name first."); }
-  accounts[id] = {id,name,balance:0,rank:"Branch"};
-  save();
-  renderBranches();
-  log("Branch opened: "+name);
-  document.getElementById("accName").value = "";
-}
-
-function setCurrentRank(r){
-  currentRank = r;
-  document.getElementById('currentRankDisplay').textContent = r;
-  log('Imperial rank now: ' + r);
-  renderBranches();
-  renderTreasury();
-  renderEmpireConsole();
-}
-
-function setBranchBalance(id){
-  const amount = Number(document.getElementById('setBalance_' + id).value);
-  if(isNaN(amount)) return log('Enter a valid amount.');
-  if(accounts[id]){
-    if(frozenBranches.includes(id)) return log('Branch is frozen and cannot be changed.');
-    accounts[id].balance = amount;
-    save();
-    renderBranches();
-    log('Updated balance for '+accounts[id].name);
-  }
-}
-
-function addMoney(id){
-  if(!isSenator()) return log('Only senators may adjust branch balance.');
-  if(frozenBranches.includes(id)) return log('Branch is frozen and cannot be changed.');
-  if(accounts[id]){
-    accounts[id].balance += 10;
-    save();
-    renderBranches();
-  }
-}
-
-function disbandBranch(id){
-  if(!isSenator()) return log('Only senators may close branches.');
-  delete accounts[id];
-  save();
-  renderBranches();
-  log("Branch closed");
-}
-
-function setRank(id,r){
-  if(accounts[id]){
-    accounts[id].rank = r;
-    save();
-    renderBranches();
-  }
-}
-
-/* =========================
-   TREASURY
-   ========================= */
-function treasuryTotal(){
-  let t = 0;
-  for(let k in accounts) t += accounts[k].balance;
-  return t;
-}
-
-/* =========================
-   TREASURY SYSTEM
-   ========================= */
-function depositTreasury(){
-  if(!isSenator()) return log('Only senators may add to the treasury.');
-  const amount = Number(document.getElementById('treasuryAdd').value);
-  if(isNaN(amount) || amount <= 0) return log('Enter a positive treasury amount.');
-  treasury += amount;
-  treasuryHistory.unshift({action:'Deposit',amount:amount,time:new Date().toISOString()});
-  save();
-  renderTreasury();
-  document.getElementById('treasuryAdd').value = "";
-  log('Added '+amount+' to the imperial treasury.');
-}
-
-function withdrawTreasury(){
-  if(!isSenator()) return log('Only senators may withdraw from the treasury.');
-  const amount = Number(document.getElementById('treasuryWithdraw').value);
-  if(isNaN(amount) || amount <= 0) return log('Enter a positive withdrawal amount.');
-  if(amount > treasury) return log('Not enough treasury funds.');
-  treasury -= amount;
-  treasuryHistory.unshift({action:'Withdraw',amount:amount,time:new Date().toISOString()});
-  save();
-  renderTreasury();
-  document.getElementById('treasuryWithdraw').value = "";
-  log('Withdrew '+amount+' from the imperial treasury.');
-}
-
-function transferToBranch(){
-  if(!isSenator()) return log('Only senators may transfer treasury funds.');
-  const id = document.getElementById('transferBranchId').value.trim();
-  const amount = Number(document.getElementById('transferAmount').value);
-  if(!id || isNaN(amount) || amount <= 0) return log('Enter a valid branch ID and amount.');
-  if(amount > treasury) return log('Not enough treasury funds.');
-  if(!accounts[id]) return log('Branch not found.');
-  treasury -= amount;
-  accounts[id].balance += amount;
-  treasuryHistory.unshift({action:'Transfer',id:id,amount:amount,time:new Date().toISOString()});
-  save();
-  renderTreasury();
-  renderBranches();
-  document.getElementById('transferBranchId').value = "";
-  document.getElementById('transferAmount').value = "";
-  log('Transferred '+amount+' to '+accounts[id].name+'.');
-}
-
-function transferBetweenBranches(fromId){
-  if(!isSenator()) return log('Only senators may move funds between branches.');
-  const toId = document.getElementById('transferTo_' + fromId).value.trim();
-  const amount = Number(document.getElementById('transferAmt_' + fromId).value);
-  if(!toId || !accounts[toId]) return log('Destination branch not found.');
-  if(isNaN(amount) || amount <= 0) return log('Enter a valid transfer amount.');
-  if(!accounts[fromId] || accounts[fromId].balance < amount) return log('Insufficient branch funds.');
-  accounts[fromId].balance -= amount;
-  accounts[toId].balance += amount;
-  treasuryHistory.unshift({action:'Branch Transfer',id:fromId + ' → ' + toId,amount:amount,time:new Date().toISOString()});
-  save();
-  renderBranches();
-  log('Moved '+amount+' from '+accounts[fromId].name+' to '+accounts[toId].name+'.');
-  document.getElementById('transferTo_' + fromId).value = "";
-  document.getElementById('transferAmt_' + fromId).value = "";
-}
-
-function setInterestRate(){
-  if(!isSenator()) return log('Only senators may adjust the treasury interest rate.');
-  const rate = Number(document.getElementById('interestRate').value);
-  if(isNaN(rate) || rate < 0) return log('Enter a valid interest rate.');
-  treasuryInterest = rate / 100;
-  save();
-  renderTreasury();
-  log('Treasury interest rate set to '+rate+'%.');
-}
-
-function applyTreasuryInterest(){
-  if(!isSenator()) return log('Only senators may apply treasury interest.');
-  const earned = Math.round(treasury * treasuryInterest);
-  treasury += earned;
-  treasuryHistory.unshift({action:'Interest',amount:earned,rate:treasuryInterest,time:new Date().toISOString()});
-  save();
-  renderTreasury();
-  log('Treasury earned '+earned+' interest.');
-}
-
-function runPayrollImmediate(){
-  if(payrolls.length === 0) return log('No distributions are queued.');
-  runPayroll();
-  log('Distribution queue executed immediately.');
-}
-
-function clearDistributions(){
-  if(!isSenator()) return log('Only senators may clear distributions.');
-  payrolls = [];
-  save();
-  renderPayroll();
-  log('Distribution queue cleared.');
-}
-
-function queueDistribution(){
-  if(!isSenator()) return log('Only senators may distribute treasury funds.');
-  const id = document.getElementById('payId').value.trim();
-  const amt = Number(document.getElementById('payAmount').value);
-  if(!id || isNaN(amt) || amt <= 0) return log('Valid branch ID and amount required.');
-  if(amt > treasury) return log('Not enough treasury funds.');
-  payrolls.push({id,amt});
-  treasury -= amt;
-  save();
-  renderPayroll();
-  renderTreasury();
-  document.getElementById('payId').value = "";
-  document.getElementById('payAmount').value = "";
-  log('Queued distribution to '+id+' of '+amt+'.');
-}
-
-function runPayroll(){
-  payrolls.forEach(p => {
-    if(accounts[p.id]){
-      accounts[p.id].balance += p.amt;
-      log('Distributed '+p.amt+' to '+accounts[p.id].name);
-    }
-  });
-  payrolls = [];
-  save();
-  renderBranches();
-  renderPayroll();
-}
-setInterval(runPayroll,15000);
-
-function renderTreasury(){
-  document.getElementById("treasuryTotal").innerHTML = "Imperial Treasury: "+treasury.toFixed(0);
-  const ratio = treasuryTotal() > 0 ? (treasury / treasuryTotal() * 100).toFixed(1) : '0.0';
-  document.getElementById("treasuryStatus").innerHTML = `Coverage: ${ratio}% of branch reserves | Interest: ${(treasuryInterest*100).toFixed(2)}%`;
-  const history = treasuryHistory.slice(0, 8).map(item => {
-    const label = item.action === 'Transfer' ? `Transfer to ${item.id}` : item.action;
-    const suffix = item.rate ? ` (${(item.rate*100).toFixed(2)}%)` : '';
-    return `<div>${new Date(item.time).toLocaleString()}: ${label} ${item.amount}${suffix}</div>`;
-  }).join('');
-  document.getElementById('treasuryHistory').innerHTML = history || '<div>No treasury actions yet.</div>';
-}
-
-/* =========================
-   SENATE SYSTEM
-   ========================= */
-function vote(v){
-  if(senateLocked) return log('Senate is locked and cannot vote.');
-  senate[v]++;
-  document.getElementById('senateYes').textContent = senate.yes;
-  document.getElementById('senateNo').textContent = senate.no;
-  const assembly = currentSenateAssembly ? senateAssemblies.find(a => a.id === currentSenateAssembly) : null;
-  log(`Senate vote: ${v}${assembly ? ' in '+assembly.name : ''}`);
-}
-
-function createAssembly(){
-  if(senateLocked) return log('Senate is locked and cannot form new assemblies.');
-  if(!isSenator()) return log('Only senators may create assemblies.');
-  const name = document.getElementById('assemblyName').value.trim();
-  const description = document.getElementById('assemblyDescription').value.trim();
-  if(!name) return log('Enter an assembly name.');
-  const assembly = {id:'assembly'+Date.now(), name, description, created:new Date().toISOString()};
-  senateAssemblies.unshift(assembly);
-  currentSenateAssembly = assembly.id;
-  save();
-  renderSenateAssemblies();
-  document.getElementById('assemblyName').value = '';
-  document.getElementById('assemblyDescription').value = '';
-  log('Created assembly: '+name);
-}
-
-function selectAssembly(id){
-  currentSenateAssembly = id;
-  save();
-  renderSenateAssemblies();
-  const assembly = senateAssemblies.find(a => a.id === id);
-  log('Selected assembly: '+(assembly ? assembly.name : id));
-}
-
-function renderSenateAssemblies(){
-  const list = senateAssemblies.length ? senateAssemblies.map(a => `
-    <div class="card">
-      <b>${a.name}</b><br>
-      ${a.description ? a.description + '<br>' : ''}
-      Created: ${new Date(a.created).toLocaleString()}<br>
-      <button class='action' onclick='selectAssembly("${a.id}")'>Select Assembly</button>
-      ${currentSenateAssembly === a.id ? '<strong>Active</strong>' : ''}
-    </div>`).join('') : '<div class="card">No assemblies created yet.</div>';
-  document.getElementById('assemblyList').innerHTML = list;
-  document.getElementById('currentAssemblyDisplay').innerHTML = currentSenateAssembly
-    ? 'Current assembly: '+(senateAssemblies.find(a => a.id === currentSenateAssembly)?.name || 'Unknown')
-    : 'No assembly selected.';
-  if(senateLocked){
-    document.getElementById('currentAssemblyDisplay').innerHTML += ' | Senate locked.';
-  }
-}
-
-/* =========================
-   ADMIN
-   ========================= */
-function wipeAll(){
-  accounts = {};
-  payrolls = [];
-  logs = [];
-  citizens = [];
-  policies = [];
-  tributeLedger = [];
-  frozenBranches = [];
-  empireEvents = [];
-  senateAssemblies = [];
-  currentSenateAssembly = null;
-  save();
-  renderBranches();
-  renderPayroll();
-  renderLogs();
-  renderTreasury();
-  renderEmpireConsole();
-  renderSenateAssemblies();
-  renderAdminPanel();
-  log("Empire wiped");
-}
-
-function boost(){
-  for(let k in accounts){
-    accounts[k].balance *= 1.1;
-  }
-  save();
-  renderBranches();
-  log("Economy boosted");
-}
-
-function registerCitizen(){
-  if(!isSenator()) return log('Only senators may register citizens.');
-  const name = document.getElementById('citizenName').value.trim();
-  if(!name) return log('Enter a citizen name.');
-  const citizen = {id:'citizen'+Date.now(), name, role:'Citizen', wealth:Math.floor(150 + Math.random()*250)};
-  citizens.unshift(citizen);
-  save();
-  renderEmpireConsole();
-  document.getElementById('citizenName').value = '';
-  log('Citizen enrolled: '+name);
-}
-
-function promoteCitizen(id){
-  const citizen = citizens.find(c => c.id === id);
-  if(!citizen) return log('Citizen not found.');
-  const roles = ['Citizen','Tribune','Senator','Consul'];
-  const next = roles[roles.indexOf(citizen.role) + 1];
-  if(!next) return log(citizen.name+' is already at the highest station.');
-  citizen.role = next;
-  save();
-  renderEmpireConsole();
-  log('Promoted '+citizen.name+' to '+citizen.role);
-}
-
-function demoteCitizen(id){
-  const citizen = citizens.find(c => c.id === id);
-  if(!citizen) return log('Citizen not found.');
-  const roles = ['Citizen','Tribune','Senator','Consul'];
-  const previous = roles[roles.indexOf(citizen.role) - 1];
-  if(!previous) return log(citizen.name+' is already at the lowest station.');
-  citizen.role = previous;
-  save();
-  renderEmpireConsole();
-  log('Demoted '+citizen.name+' to '+citizen.role);
-}
-
-function declarePolicy(){
-  if(!isSenator()) return log('Only senators may declare edicts.');
-  const name = document.getElementById('policyName').value.trim();
-  const effect = document.getElementById('policyEffect').value.trim();
-  if(!name) return log('Enter a policy name.');
-  const policy = {id:'policy'+Date.now(), name, effect, created:new Date().toISOString()};
-  policies.unshift(policy);
-  if(effect.toLowerCase().includes('tax')) tributeRate = Math.min(50, tributeRate + 2);
-  if(effect.toLowerCase().includes('spend')){
-    treasury = Math.max(0, treasury - 200);
-    treasuryHistory.unshift({action:'Policy Spending', amount:200, time:new Date().toISOString()});
-  }
-  if(effect.toLowerCase().includes('reserve')){
-    treasury += 200;
-    treasuryHistory.unshift({action:'Policy Reserve', amount:200, time:new Date().toISOString()});
-  }
-  empireEvents.unshift({when:new Date().toISOString(), text:'Declared edict: '+name});
-  save();
-  renderEmpireConsole();
-  renderPolicies();
-  renderTreasury();
-  document.getElementById('policyName').value = '';
-  document.getElementById('policyEffect').value = '';
-  log('Declared policy: '+name);
-}
-
-function revokePolicy(id){
-  policies = policies.filter(p => p.id !== id);
-  save();
-  renderEmpireConsole();
-  renderPolicies();
-  log('Policy revoked.');
-}
-
-function renderCitizens(){
-  const list = citizens.length ? citizens.map(c => `
-    <div class="card">
-      <b>${c.name}</b> (${c.role}) - ${c.wealth.toFixed(0)} aurum<br>
-      <button class='action' onclick='promoteCitizen("${c.id}")'>Promote</button>
-      <button class='action' onclick='demoteCitizen("${c.id}")'>Demote</button>
-    </div>`).join('') : '<div class="card">No registered citizens.</div>';
-  document.getElementById('citizenList').innerHTML = list;
-}
-
-function renderPolicies(){
-  const list = policies.length ? policies.map(p => `
-    <div class="card">
-      <b>${p.name}</b><br>
-      ${p.effect}<br>
-      Declared: ${new Date(p.created).toLocaleString()}<br>
-      <button class='action' onclick='revokePolicy("${p.id}")'>Revoke</button>
-    </div>`).join('') : '<div class="card">No policies declared.</div>';
-  document.getElementById('policyList').innerHTML = list;
-}
-
-function renderEmpireConsole(){
-  const wealth = citizens.reduce((sum, c) => sum + c.wealth, 0);
-  const stability = Math.max(0, Math.min(100, 100 - policies.length * 2 + citizens.filter(c => c.role === 'Senator').length * 3));
-  document.getElementById('currentRankDisplay').textContent = currentRank;
-  document.getElementById('empireWealth').textContent = wealth.toFixed(0);
-  document.getElementById('empireStability').textContent = stability;
-  document.getElementById('empirePoliciesCount').textContent = policies.length;
-  renderCitizens();
-  renderPolicies();
-  const eventsHtml = empireEvents.slice(0, 4).map(e => `<div>${new Date(e.when).toLocaleString()}: ${e.text}</div>`).join('') || '<div>No recent events.</div>';
-  document.getElementById('empireStatus').innerHTML = `<strong>Recent events</strong><br>${eventsHtml}`;
-}
-
-function collectTributeFromBranch(){
-  if(!isSenator()) return log('Only senators may collect tribute.');
-  const id = document.getElementById('tributeBranchId').value.trim();
-  let amount = Number(document.getElementById('tributeAmount').value);
-  if(!id) return log('Enter a branch ID.');
-  const branch = accounts[id];
-  if(!branch) return log('Branch not found.');
-  if(frozenBranches.includes(id)) return log('Frozen branch cannot pay tribute.');
-  if(isNaN(amount) || amount <= 0){
-    amount = Math.max(1, Math.floor(branch.balance * tributeRate / 100));
-  }
-  if(amount > branch.balance) return log('Branch cannot afford this tribute.');
-  branch.balance -= amount;
-  treasury += amount;
-  tributeLedger.unshift({type:'Collected', id, amount, time:new Date().toISOString(), rate:tributeRate});
-  save();
-  renderBranches();
-  renderTreasury();
-  renderTribute();
-  document.getElementById('tributeBranchId').value = '';
-  document.getElementById('tributeAmount').value = '';
-  log('Collected '+amount+' tribute from '+branch.name+'.');
-}
-
-function updateTributeRate(){
-  if(!isSenator()) return log('Only senators may change the tribute rate.');
-  const rate = Number(document.getElementById('tributeRate').value);
-  if(isNaN(rate) || rate < 0) return log('Enter a valid tribute rate.');
-  tributeRate = rate;
-  save();
-  renderTribute();
-  log('Tribute rate updated to '+tributeRate+'%.');
-}
-
-function enforceTribute(){
-  if(!isSenator()) return log('Only senators may enforce tribute.');
-  let total = 0;
-  Object.values(accounts).forEach(branch => {
-    if(!frozenBranches.includes(branch.id) && branch.balance > 0){
-      const amount = Math.max(1, Math.floor(branch.balance * tributeRate / 100));
-      branch.balance -= amount;
-      treasury += amount;
-      total += amount;
-      tributeLedger.unshift({type:'Enforced', id:branch.id, amount, time:new Date().toISOString(), rate:tributeRate});
-    }
-  });
-  if(total === 0) return log('No tribute could be collected.');
-  save();
-  renderBranches();
-  renderTreasury();
-  renderTribute();
-  log('Enforced tribute collection: '+total+' aurum collected.');
-}
-
-function renderTribute(){
-  const ledger = tributeLedger.slice(0, 8).map(item => `
-    <div>${new Date(item.time).toLocaleString()}: ${item.type} ${item.amount} from ${item.id} @ ${item.rate}%</div>
-  `).join('');
-  document.getElementById('tributeLedger').innerHTML = `
-    <div>Tribute Rate: ${tributeRate}%</div>
-    ${ledger || '<div class="card">No tribute activity yet.</div>'}
-  `;
-}
-
-function auditEmpire(){
-  if(!adminAuthenticated) return log('Admin access required.');
-  const branchCount = Object.keys(accounts).length;
-  const citizenCount = citizens.length;
-  const topBranch = Object.values(accounts).sort((a,b) => b.balance - a.balance)[0];
-  lastAudit = {
-    message: `Audit completed: ${citizenCount} citizens, ${branchCount} branches, treasury ${treasury.toFixed(0)}, top branch ${topBranch ? topBranch.name+'('+topBranch.balance+')' : 'none'}.`,
-    time: new Date().toISOString()
-  };
-  save();
-  renderAdminPanel();
-  log(lastAudit.message);
-}
-
-function resetTreasury(amount){
-  if(!adminAuthenticated) return log('Admin access required.');
-  treasury = Number(amount);
-  treasuryHistory.unshift({action:'Admin Reset', amount:treasury, time:new Date().toISOString()});
-  save();
-  renderTreasury();
-  log('Treasury reset to '+treasury+'.');
-}
-
-function moveToEmergencyReserve(amount){
-  if(!adminAuthenticated) return log('Admin access required.');
-  treasury += Number(amount);
-  treasuryHistory.unshift({action:'Emergency Reserve', amount:Number(amount), time:new Date().toISOString()});
-  save();
-  renderTreasury();
-  log('Emergency reserve added: '+amount+'.');
-}
-
-function toggleSenateLock(){
-  if(!adminAuthenticated) return log('Admin access required.');
-  senateLocked = !senateLocked;
-  save();
-  renderSenateAssemblies();
-  renderAdminPanel();
-  log('Senate lock '+(senateLocked ? 'enabled' : 'disabled')+'.');
-}
-
-function freezeBranch(){
-  if(!adminAuthenticated) return log('Admin access required.');
-  const id = document.getElementById('freezeBranchId').value.trim();
-  if(!id || !accounts[id]) return log('Branch not found.');
-  if(!frozenBranches.includes(id)) frozenBranches.push(id);
-  save();
-  renderBranches();
-  renderAdminPanel();
-  log('Branch '+id+' frozen.');
-}
-
-function unfreezeBranch(){
-  if(!adminAuthenticated) return log('Admin access required.');
-  const id = document.getElementById('freezeBranchId').value.trim();
-  if(!id) return log('Enter a branch ID.');
-  frozenBranches = frozenBranches.filter(x => x !== id);
-  save();
-  renderBranches();
-  renderAdminPanel();
-  log('Branch '+id+' unfrozen.');
-}
-
-function exportEmpireState(){
-  if(!adminAuthenticated) return log('Admin access required.');
-  const state = {
-    accounts, citizens, policies, treasury, treasuryHistory, tributeRate, tributeLedger,
-    frozenBranches, empireEvents, senateAssemblies, currentSenateAssembly, policiesCount:policies.length
-  };
-  document.getElementById('adminAuditOutput').innerHTML = `<pre style="white-space:pre-wrap;max-height:260px;overflow:auto;">${JSON.stringify(state, null, 2)}</pre>`;
-  log('Empire state exported to admin console.');
-}
-
-function renderAdminPanel(){
-  document.getElementById('adminStatus').textContent = adminAuthenticated
-    ? `Admin access granted. Senate locked: ${senateLocked ? 'YES' : 'NO'}`
-    : 'Enter password to unlock advanced controls.';
-  document.getElementById('adminAuditOutput').innerHTML = lastAudit.message
-    ? `<div class="card">${lastAudit.message}</div>`
-    : '<div class="card">No audit performed yet.</div>';
-}
-
-function isBranchFrozen(id){
-  return frozenBranches.includes(id);
-}
-
-/* =========================
-   RENDER SYSTEM
-   ========================= */
-function renderBranches(){
-  let out = "";
-  if(!isSenator()){
-    out = '<div class="card">Senators only may access branch records.</div>';
-  } else {
-    for(let k in accounts){
-      const a = accounts[k];
-      out += `
-        <div class='card'>
-          <b>${a.name}</b> <small>(${a.id})</small><br>
-          Balance: ${a.balance.toFixed(0)} aurum<br>
-          <button class='action' onclick='addMoney("${a.id}")'>+10</button>
-          <button class='action' onclick='disbandBranch("${a.id}")'>Close Branch</button>
-          ${frozenBranches.includes(a.id) ? '<div><em>Frozen branch: no changes allowed.</em></div>' : ''}
-          <div>
-            <input id='setBalance_${a.id}' type='number' placeholder='Set balance' />
-            <button class='action' onclick='setBranchBalance("${a.id}")'>Set Balance</button>
+  <div class="container">
+    <section id="legions" class="panel active">
+      <h2>Aurum Branches</h2>
+      <div class="card-row">
+        <div class="card">
+          <h3>Imperial Treasury</h3>
+          <p class="small">Current Aurum reserves available to the bank.</p>
+          <div class="status" id="treasuryValue">0 aurum</div>
+          <div style="margin-top:14px;">
+            <label for="treasuryAmount">Add or withdraw aurum</label>
+            <input id="treasuryAmount" type="number" min="0" placeholder="Amount" />
+            <button class="action wide-button" onclick="adjustTreasury()">Update Treasury</button>
           </div>
-          <div>
-            <input id='transferTo_${a.id}' placeholder='Transfer to branch id' />
-            <input id='transferAmt_${a.id}' type='number' placeholder='Amount' />
-            <button class='action' onclick='transferBetweenBranches("${a.id}")'>Transfer</button>
+          <div style="margin-top:14px;">
+            <label for="branchTransferTarget">Transfer to branch</label>
+            <select id="branchTransferTarget"></select>
+            <input id="branchTransferAmount" type="number" min="0" placeholder="Amount" />
+            <button class="action wide-button" onclick="transferToBranch()">Send to Branch</button>
           </div>
-        </div>`;
+        </div>
+        <div class="card">
+          <h3>Forge New Branch</h3>
+          <label for="newBranchName">Branch name</label>
+          <input id="newBranchName" placeholder="New branch name" />
+          <button class="action wide-button" onclick="createBranch()">Forge Branch</button>
+          <div style="margin-top:16px;">
+            <h4>Branch Summary</h4>
+            <div id="branchList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tribute" class="panel">
+      <h2>Tribute</h2>
+      <div class="card-row">
+        <div class="card">
+          <h3>Province Italia</h3>
+          <p class="small">Collect tribute from the heart of the Empire.</p>
+          <div id="provinceStatus"></div>
+          <label for="tributeRate">Tribute rate (%)</label>
+          <input id="tributeRate" type="number" min="1" max="30" />
+          <button class="action wide-button" onclick="updateTributeRate()">Set Tribute Rate</button>
+          <button class="action wide-button" style="margin-top:8px;" onclick="collectTribute()">Collect Tribute</button>
+        </div>
+        <div class="card">
+          <h3>Tribute Ledger</h3>
+          <div id="tributeLedger"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="senate" class="panel">
+      <h2>Senate</h2>
+      <div class="card-row">
+        <div class="card">
+          <h3>Political Council</h3>
+          <p class="small">Only senators may propose policy and vote.</p>
+          <label for="currentRank">Current role</label>
+          <select id="currentRank" onchange="setRank(this.value)">
+            <option value="Emperor">Emperor</option>
+            <option value="Senator">Senator</option>
+            <option value="Citizen">Citizen</option>
+          </select>
+          <div style="margin-top:14px;">
+            <strong>Current rank:</strong> <span id="rankDisplay"></span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Senate Proposal</h3>
+          <label for="proposalText">New proposal</label>
+          <textarea id="proposalText" rows="3" placeholder="Describe the policy"></textarea>
+          <button class="action wide-button" onclick="proposeMotion()">Propose Motion</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Active Motion</h3>
+        <div id="proposalPanel"></div>
+      </div>
+    </section>
+
+    <section id="logs" class="panel">
+      <h2>Oracle Logs</h2>
+      <div class="card">
+        <button class="action wide-button" onclick="clearLogs()">Clear Logs</button>
+      </div>
+      <div class="log" id="logBox"></div>
+    </section>
+
+    <section id="admin" class="panel">
+      <h2>Admin Panel</h2>
+      <div class="card-row">
+        <div class="card">
+          <h3>Admin Access</h3>
+          <p class="small">Unlock advanced controls with the password.</p>
+          <input id="adminPassword" type="password" placeholder="Admin password" />
+          <button class="action wide-button" onclick="adminLogin()">Unlock Admin</button>
+          <button class="action wide-button" style="margin-top:8px;" onclick="adminLogout()">Lock Admin</button>
+          <div id="adminStatus" style="margin-top:12px;"></div>
+        </div>
+        <div class="card" id="adminControls" style="display:none;">
+          <h3>Secure Controls</h3>
+          <button class="action wide-button" onclick="exportState()">Export State</button>
+          <button class="action wide-button" style="margin-top:8px;" onclick="resetState()">Reset System</button>
+          <div style="margin-top:14px;">
+            <label for="newAdminPassword">Change admin password</label>
+            <input id="newAdminPassword" type="password" placeholder="New password" />
+            <button class="action wide-button" onclick="changeAdminPassword()">Update Password</button>
+          </div>
+          <div id="adminOutput" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>Imperium Bank • Local browser persistence only • Keep your admin password safe</footer>
+
+  <script>
+    const STORAGE_KEY = 'imperium-bank-state-v2';
+    const DEFAULT_STATE = {
+      treasury: 2500,
+      tributeRate: 10,
+      province: { name: 'Italia', wealth: 1200, loyalty: 90 },
+      tributeLedger: [],
+      accounts: {
+        legio1: { id:'legio1', name:'Legio I', balance: 550 },
+        legio2: { id:'legio2', name:'Legio II', balance: 420 },
+        legio3: { id:'legio3', name:'Legio III', balance: 630 }
+      },
+      logs: [],
+      currentRank: 'Emperor',
+      proposal: { id: null, text: '', yes: 0, no: 0, status: 'none' },
+      adminPassword: 'imperium',
+      adminAuthenticated: false
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!saved || typeof saved !== 'object') throw new Error('empty');
+        return { ...DEFAULT_STATE, ...saved, province: { ...DEFAULT_STATE.province, ...(saved.province || {}) }, proposal: { ...DEFAULT_STATE.proposal, ...(saved.proposal || {}) }, accounts: { ...DEFAULT_STATE.accounts, ...(saved.accounts || {}) } };
+      } catch (error) {
+        return { ...DEFAULT_STATE };
+      }
     }
-    if(out === "") out = '<div class="card">No branches have been forged yet.</div>';
-  }
-  document.getElementById("accountsList").innerHTML = out;
-  renderTreasury();
-}
 
-function renderPayroll(){
-  const list = payrolls.length
-    ? payrolls.map(p => `${p.id} : ${p.amt}`).join("<br>")
-    : '<div class="card">No pending distributions.</div>';
-  document.getElementById("payrollList").innerHTML = `<div class="card">Queued tributes: ${payrolls.length}</div>${list}`;
-}
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        treasury: state.treasury,
+        tributeRate: state.tributeRate,
+        province: state.province,
+        tributeLedger: state.tributeLedger,
+        accounts: state.accounts,
+        logs: state.logs,
+        currentRank: state.currentRank,
+        proposal: state.proposal,
+        adminPassword: state.adminPassword
+      }));
+    }
 
-function updateExchangeRateOptions(){
-  const list = exchangeRates.map(rate => `
-    <option value="${rate.symbol}" ${rate.symbol === currentExchangeSymbol ? 'selected' : ''}>
-      ${rate.symbol} (${rate.rate.toFixed(2)})
-    </option>`).join('');
-  document.getElementById('exchangeRateSelect').innerHTML = list;
-}
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      state.logs.unshift(`[${time}] ${message}`);
+      if (state.logs.length > 200) state.logs.pop();
+      saveState();
+      renderLogs();
+    }
 
-function issueInstrument(){
-  if(!isSenator()) return log('Only senators may issue bank instruments.');
-  const name = document.getElementById('instrumentsName').value.trim();
-  const amount = Number(document.getElementById('instrumentsAmount').value);
-  if(!name || isNaN(amount) || amount <= 0) return log('Valid instrument name and value are required.');
-  const instrument = {id:'instr'+Date.now(), name, amount, issued:new Date().toISOString(), rate:Math.max(3, Math.min(12, 4 + Math.random()*8)), status:'active'};
-  bankInstruments.unshift(instrument);
-  treasury += amount;
-  bankReports.unshift({when:new Date().toISOString(), text:`Issued ${name} for ${amount} aurum`, score:Math.floor(Math.random()*10)+1});
-  save();
-  renderExchange();
-  renderReports();
-  document.getElementById('instrumentsName').value = '';
-  document.getElementById('instrumentsAmount').value = '';
-  log('Issued bank instrument: '+name);
-}
+    function formatAurum(value) {
+      return `${Math.round(value)} aurum`;
+    }
 
-function requestLoan(){
-  if(!isSenator()) return log('Only senators may request imperial loans.');
-  const borrower = document.getElementById('loanRequestName').value.trim();
-  const amount = Number(document.getElementById('loanRequestAmount').value);
-  if(!borrower || isNaN(amount) || amount <= 0) return log('Enter borrower name and amount.');
-  const loan = {id:'loan'+Date.now(), borrower, amount, term:Math.ceil(Math.random()*18), rate:Math.max(8,Math.min(18, 9+Math.random()*7)), outstanding:amount, status:'pending'};
-  loanRequests.unshift(loan);
-  save();
-  renderExchange();
-  document.getElementById('loanRequestName').value = '';
-  document.getElementById('loanRequestAmount').value = '';
-  log('Requested loan for '+borrower+' of '+amount+' aurum.');
-}
+    function requireAdmin(action) {
+      if (!state.adminAuthenticated) {
+        log(`Admin login required to ${action}.`);
+        return false;
+      }
+      return true;
+    }
 
-function setExchangeRate(symbol){
-  currentExchangeSymbol = symbol;
-  save();
-  renderExchange();
-}
+    function switchView(view) {
+      document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+      const target = document.getElementById(view);
+      if (target) target.classList.add('active');
+      renderAll();
+    }
 
-function applyExchangeRate(){
-  exchangeRates = exchangeRates.map(rate => {
-    const change = 1 + (Math.random() - 0.4) * 0.12;
-    return {...rate, rate: Math.max(0.05, rate.rate * change)};
-  });
-  save();
-  updateExchangeRateOptions();
-  renderExchange();
-  log('Exchange rates rebalanced by the bank.');
-}
+    function renderAll() {
+      renderBranches();
+      renderTribute();
+      renderSenate();
+      renderLogs();
+      renderAdmin();
+    }
 
-function renderExchange(){
-  updateExchangeRateOptions();
-  const instruments = bankInstruments.length ? bankInstruments.map(i => `
-    <div class="card">
-      <b>${i.name}</b><br>
-      Value: ${i.amount} aurum | Rate: ${i.rate}% | Status: ${i.status}<br>
-      Issued: ${new Date(i.issued).toLocaleDateString()}<br>
-    </div>`).join('') : '<div class="card">No bank instruments issued yet.</div>';
-  const loans = loanRequests.length ? loanRequests.map(l => `
-    <div class="card">
-      <b>${l.borrower}</b> requested ${l.amount} aurum<br>
-      Term: ${l.term} months | Rate: ${l.rate}% | Status: ${l.status}<br>
-    </div>`).join('') : '<div class="card">No loan requests pending.</div>';
-  document.getElementById('exchangeList').innerHTML = `<div class="card"><strong>Current exchange:</strong> ${currentExchangeSymbol}</div>${instruments}${loans}`;
-}
+    function renderBranches() {
+      document.getElementById('treasuryValue').textContent = formatAurum(state.treasury);
+      const branchSelect = document.getElementById('branchTransferTarget');
+      branchSelect.innerHTML = '';
+      const branchList = Object.values(state.accounts).map(account => {
+        branchSelect.insertAdjacentHTML('beforeend', `<option value="${account.id}">${account.name}</option>`);
+        return `
+          <div class="card">
+            <strong>${account.name}</strong><br>
+            Balance: ${formatAurum(account.balance)}
+            <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="action" onclick="adjustBranch('${account.id}', 100)">+100</button>
+              <button class="action" onclick="adjustBranch('${account.id}', -100)">-100</button>
+            </div>
+          </div>`;
+      }).join('');
+      document.getElementById('branchList').innerHTML = branchList || '<div class="card">No branches forged.</div>';
+      document.getElementById('currentRank').value = state.currentRank;
+      document.getElementById('rankDisplay').textContent = state.currentRank;
+    }
 
-function launchCampaign(){
-  if(!isSenator()) return log('Only senators may launch campaigns.');
-  const name = document.getElementById('campaignName').value.trim();
-  const budget = Number(document.getElementById('campaignBudget').value);
-  if(!name || isNaN(budget) || budget <= 0) return log('Valid campaign name and budget required.');
-  if(budget > treasury) return log('Not enough treasury to fund this campaign.');
-  treasury -= budget;
-  const campaign = {id:'camp'+Date.now(), name, budget, spent:0, status:'active', turns:Math.ceil(Math.random()*6)+2};
-  campaigns.unshift(campaign);
-  bankReports.unshift({when:new Date().toISOString(), text:`Launched campaign ${name}`, score:7});
-  save();
-  renderCampaigns();
-  renderTreasury();
-  renderReports();
-  document.getElementById('campaignName').value = '';
-  document.getElementById('campaignBudget').value = '';
-  log('Campaign launched: '+name+' with '+budget+' aurum.');
-}
+    function createBranch() {
+      if (!requireAdmin('forge a new branch')) return;
+      const name = document.getElementById('newBranchName').value.trim();
+      if (!name) { log('Branch creation failed: name required.'); return; }
+      const nextId = `legio${Object.keys(state.accounts).length + 1}`;
+      state.accounts[nextId] = { id: nextId, name, balance: 0 };
+      document.getElementById('newBranchName').value = '';
+      log(`Forged new branch: ${name}.`);
+      saveState();
+      renderBranches();
+    }
 
-function fundCampaign(){
-  if(!isSenator()) return log('Only senators may fund campaigns.');
-  const id = document.getElementById('campaignFundId').value.trim();
-  const amount = Number(document.getElementById('campaignFundAmount').value);
-  if(!id || isNaN(amount) || amount <= 0) return log('Valid campaign ID and amount required.');
-  const campaign = campaigns.find(c => c.id === id);
-  if(!campaign) return log('Campaign not found.');
-  if(amount > treasury) return log('Not enough treasury to fund this amount.');
-  treasury -= amount;
-  campaign.budget += amount;
-  bankReports.unshift({when:new Date().toISOString(), text:`Funded ${campaign.name} by ${amount} aurum`, score:6});
-  save();
-  renderCampaigns();
-  renderTreasury();
-  renderReports();
-  document.getElementById('campaignFundId').value = '';
-  document.getElementById('campaignFundAmount').value = '';
-  log('Funded campaign '+campaign.name+' by '+amount+'.');
-}
+    function adjustTreasury() {
+      if (!requireAdmin('adjust treasury')) return;
+      const value = Number(document.getElementById('treasuryAmount').value);
+      if (Number.isNaN(value) || value === 0) { log('Enter a valid treasury amount.'); return; }
+      state.treasury = Math.max(0, state.treasury + value);
+      document.getElementById('treasuryAmount').value = '';
+      log(`Treasury adjusted by ${Math.round(value)} aurum.`);
+      saveState();
+      renderBranches();
+    }
 
-function progressCampaign(id){
-  const campaign = campaigns.find(c => c.id === id);
-  if(!campaign) return;
-  const progress = Math.min(campaign.budget - campaign.spent, Math.max(1, Math.floor(Math.random()*80)));
-  campaign.spent += progress;
-  campaign.turns = Math.max(0, campaign.turns - 1);
-  if(campaign.turns === 0 || campaign.spent >= campaign.budget){
-    campaign.status = 'complete';
-    bankEvents.unshift({when:new Date().toISOString(), text:`Campaign ${campaign.name} completed`, effect:campaign.spent});
-  }
-  save();
-}
+    function transferToBranch() {
+      if (!requireAdmin('transfer aurum to a branch')) return;
+      const target = document.getElementById('branchTransferTarget').value;
+      const amount = Number(document.getElementById('branchTransferAmount').value);
+      if (!target || Number.isNaN(amount) || amount <= 0) { log('Enter a valid transfer target and amount.'); return; }
+      if (amount > state.treasury) { log('Not enough aurum in treasury.'); return; }
+      state.treasury -= amount;
+      state.accounts[target].balance += amount;
+      document.getElementById('branchTransferAmount').value = '';
+      log(`Transferred ${Math.round(amount)} aurum to ${state.accounts[target].name}.`);
+      saveState();
+      renderBranches();
+    }
 
-function renderCampaigns(){
-  const list = campaigns.length ? campaigns.map(c => `
-    <div class="card">
-      <b>${c.name}</b><br>
-      Budget: ${c.budget.toFixed(0)} aurum | Spent: ${c.spent.toFixed(0)} aurum<br>
-      Status: ${c.status} | Turns remaining: ${c.turns}<br>
-      <button class='action' onclick='progressCampaign("${c.id}")'>Advance Campaign</button>
-    </div>`).join('') : '<div class="card">No campaigns underway.</div>';
-  document.getElementById('campaignList').innerHTML = list;
-}
+    function adjustBranch(id, amount) {
+      if (!requireAdmin('adjust branch funds')) return;
+      const account = state.accounts[id];
+      if (!account) return;
+      if (account.balance + amount < 0) { log('Branch balance cannot go negative.'); return; }
+      account.balance += amount;
+      saveState();
+      renderBranches();
+      log(`${amount >= 0 ? 'Added' : 'Removed'} ${Math.abs(amount)} aurum ${amount >= 0 ? 'to' : 'from'} ${account.name}.`);
+    }
 
-function proposeWork(){
-  if(!isSenator()) return log('Only senators may propose public works.');
-  const name = document.getElementById('workName').value.trim();
-  const budget = Number(document.getElementById('workBudget').value);
-  if(!name || isNaN(budget) || budget <= 0) return log('Valid project name and budget required.');
-  const work = {id:'work'+Date.now(), name, budget, progress:0, status:'planned', created:new Date().toISOString()};
-  works.unshift(work);
-  save();
-  renderWorks();
-  document.getElementById('workName').value = '';
-  document.getElementById('workBudget').value = '';
-  log('Proposed public work: '+name);
-}
+    function renderTribute() {
+      document.getElementById('tributeRate').value = state.tributeRate;
+      document.getElementById('provinceStatus').innerHTML = `
+        <div class="status">Wealth: ${formatAurum(state.province.wealth)}<br>Loyalty: ${state.province.loyalty}%</div>`;
+      const ledgerHtml = state.tributeLedger.length ? state.tributeLedger.map(entry => `
+        <div class="card"><strong>${entry.when}</strong><br>${entry.amount.toFixed(0)} aurum collected</div>`).join('') : '<div class="card">No tribute has been collected yet.</div>';
+      document.getElementById('tributeLedger').innerHTML = ledgerHtml;
+    }
 
-function investInWork(){
-  if(!isSenator()) return log('Only senators may invest in public works.');
-  const id = document.getElementById('workId').value.trim();
-  const amount = Number(document.getElementById('workProgressAmount').value);
-  if(!id || isNaN(amount) || amount <= 0) return log('Valid project ID and investment amount required.');
-  const work = works.find(w => w.id === id);
-  if(!work) return log('Project not found.');
-  if(amount > treasury) return log('Not enough treasury reserves.');
-  treasury -= amount;
-  work.progress += amount;
-  if(work.progress >= work.budget){
-    work.progress = work.budget;
-    work.status = 'complete';
-  } else {
-    work.status = 'building';
-  }
-  bankReports.unshift({when:new Date().toISOString(), text:`Invested ${amount} into ${work.name}`, score:5});
-  save();
-  renderWorks();
-  renderTreasury();
-  renderReports();
-  document.getElementById('workId').value = '';
-  document.getElementById('workProgressAmount').value = '';
-  log('Invested '+amount+' aurum into '+work.name+'.');
-}
+    function updateTributeRate() {
+      if (!requireAdmin('set tribute rate')) return;
+      const rate = Number(document.getElementById('tributeRate').value);
+      if (Number.isNaN(rate) || rate < 1 || rate > 30) { log('Tribute rate must be between 1 and 30%.'); return; }
+      state.tributeRate = rate;
+      log(`Tribute rate set to ${rate}%`);
+      saveState();
+      renderTribute();
+    }
 
-function renderWorks(){
-  const list = works.length ? works.map(w => `
-    <div class="card">
-      <b>${w.name}</b><br>
-      Budget: ${w.budget.toFixed(0)} aurum | Progress: ${w.progress.toFixed(0)} aurum<br>
-      Status: ${w.status} | Created: ${new Date(w.created).toLocaleDateString()}<br>
-    </div>`).join('') : '<div class="card">No public works proposed.</div>';
-  document.getElementById('workList').innerHTML = list;
-  const statusText = works.length ? works.map(w => `${w.name}: ${w.status}`).join('<br>') : 'No projects active.';
-  document.getElementById('projectStatus').innerHTML = `<div class="card"><strong>Project status</strong><br>${statusText}</div>`;
-}
+    function collectTribute() {
+      if (!requireAdmin('collect tribute')) return;
+      const amount = Math.max(50, Math.round(state.province.wealth * state.tributeRate / 100));
+      state.treasury += amount;
+      state.province.wealth = Math.max(0, state.province.wealth - Math.round(amount * 0.35));
+      state.province.loyalty = Math.max(50, state.province.loyalty - 2);
+      state.tributeLedger.unshift({ when: new Date().toLocaleString(), amount });
+      if (state.tributeLedger.length > 50) state.tributeLedger.pop();
+      log(`Collected ${Math.round(amount)} aurum in tribute from Italia.`);
+      saveState();
+      renderTribute();
+      renderBranches();
+    }
 
-function recordBankEvent(text){
-  const event = {when:new Date().toISOString(), text};
-  bankEvents.unshift(event);
-  if(bankEvents.length > 50) bankEvents.pop();
-  save();
-  renderBankEvents();
-}
+    function renderSenate() {
+      const proposal = state.proposal;
+      let proposalHtml;
+      if (proposal.status === 'open') {
+        proposalHtml = `
+          <div class="card">
+            <strong>${proposal.text}</strong><br>
+            Yes: ${proposal.yes} | No: ${proposal.no}<br>
+            <button class="action wide-button" onclick="vote('yes')">Vote Yes</button>
+            <button class="action wide-button" style="margin-top:8px;" onclick="vote('no')">Vote No</button>
+          </div>`;
+      } else if (proposal.status === 'closed') {
+        const result = proposal.yes > proposal.no ? 'Approved' : proposal.yes < proposal.no ? 'Rejected' : 'Tied';
+        proposalHtml = `
+          <div class="card">
+            <strong>${proposal.text}</strong><br>
+            Final result: ${result}<br>
+            Yes: ${proposal.yes} | No: ${proposal.no}<br>
+            <button class="action wide-button" onclick="clearProposal()">Clear Motion</button>
+          </div>`;
+      } else {
+        proposalHtml = '<div class="card">No active proposal. Create one to start debate.</div>';
+      }
+      document.getElementById('proposalPanel').innerHTML = proposalHtml;
+      document.getElementById('rankDisplay').textContent = state.currentRank;
+    }
 
-function processBankEvent(){
-  const template = eventChronicles[Math.floor(Math.random() * eventChronicles.length)];
-  const amount = Math.max(10, Math.floor(Math.random() * 120));
-  const message = `${template} (${amount} aurum impact).`;
-  if(Math.random() > 0.5){
-    treasury += amount;
-    bankReports.unshift({when:new Date().toISOString(), text:`${message} Bank gain`, score:Math.floor(Math.random()*5)+1});
-  } else {
-    treasury = Math.max(0, treasury - amount);
-    bankReports.unshift({when:new Date().toISOString(), text:`${message} Bank loss`, score:Math.floor(Math.random()*5)+1});
-  }
-  bankEvents.unshift({when:new Date().toISOString(), text:message});
-  eventLevel = Math.min(10, eventLevel + 0.1);
-  save();
-  renderTreasury();
-  renderBankEvents();
-  renderReports();
-  log('Imperial bank event occurred.');
-}
+    function setRank(rank) {
+      if (!requireAdmin('set rank')) return;
+      state.currentRank = rank;
+      saveState();
+      renderSenate();
+      log(`Role changed to ${rank}.`);
+    }
 
-function renderBankEvents(){
-  const list = bankEvents.slice(0, 6).map(e => `<div>${new Date(e.when).toLocaleString()}: ${e.text}</div>`).join('');
-  document.getElementById('empireStatus').innerHTML = `<strong>Bank events</strong><br>${list || 'No recent bank events.'}`;
-}
+    function isSenator() {
+      return state.currentRank === 'Senator' || state.currentRank === 'Emperor';
+    }
 
-function recordStateHistory(type, source, amount){
-  const entry = {when:new Date().toISOString(), type, source, amount};
-  stateHistory.unshift(entry);
-  if(stateHistory.length > 80) stateHistory.pop();
-  save();
-}
+    function proposeMotion() {
+      if (!isSenator()) { log('Only senators may propose motions.'); return; }
+      const text = document.getElementById('proposalText').value.trim();
+      if (!text) { log('Proposal text cannot be empty.'); return; }
+      state.proposal = { id: Date.now(), text, yes: 0, no: 0, status: 'open' };
+      document.getElementById('proposalText').value = '';
+      log(`Senate proposal created: ${text}`);
+      saveState();
+      renderSenate();
+    }
 
-function renderReports(){
-  const list = bankReports.slice(0, 5).map(r => `
-    <div class="card">
-      ${new Date(r.when).toLocaleDateString()}: ${r.text} <br>
-      Score: ${r.score}
-    </div>`).join('');
-  const output = list || '<div class="card">No bank reports yet.</div>';
-  document.getElementById('adminAuditOutput').innerHTML = output;
-}
+    function clearProposal() {
+      if (!isSenator()) { log('Only senators may clear proposals.'); return; }
+      state.proposal = { ...DEFAULT_STATE.proposal };
+      saveState();
+      renderSenate();
+      log('Senate motion cleared.');
+    }
 
-function renderHistory(){
-  const list = stateHistory.slice(0, 10).map(h => `
-    <div>${new Date(h.when).toLocaleString()}: ${h.type} ${h.amount} (${h.source})</div>`).join('');
-  const historyBlock = list || '<div class="card">No history recorded.</div>';
-  if(document.getElementById('logBox')){
-    document.getElementById('logBox').innerHTML = historyBlock + '<br>' + document.getElementById('logBox').innerHTML;
-  }
-}
+    function vote(choice) {
+      if (!isSenator()) { log('Only senators may vote.'); return; }
+      if (state.proposal.status !== 'open') { log('There is no active motion to vote on.'); return; }
+      state.proposal[choice] += 1;
+      log(`A ${choice} vote was cast.`);
+      if (state.proposal.yes + state.proposal.no >= 5) {
+        state.proposal.status = 'closed';
+        log(`Motion closed: ${state.proposal.yes > state.proposal.no ? 'Approved' : 'Rejected'}.`);
+      }
+      saveState();
+      renderSenate();
+    }
 
-function renderTradeRoutes(){
-  const list = tradeRoutes.length ? tradeRoutes.map(r => `
-    <div class="card">
-      <b>${r.name}</b><br>
-      Yield: ${r.yield} aurum | Status: ${r.status}<br>
-      <button class='action' onclick='collectRouteToll("${r.id}")'>Collect Toll</button>
-    </div>`).join('') : '<div class="card">No trade routes established.</div>';
-  document.getElementById('treasuryHistory').innerHTML += list;
-}
+    function renderLogs() {
+      document.getElementById('logBox').innerHTML = state.logs.map(line => `${line}`).join('<br>');
+    }
 
-function collectRouteToll(id){
-  const route = tradeRoutes.find(r => r.id === id);
-  if(!route) return log('Trade route not found.');
-  const amount = Math.max(20, Math.floor(route.yield * (route.status === 'active' ? 1.2 : 0.8)));
-  treasury += amount;
-  recordBankEvent(`Collected toll from ${route.name} for ${amount} aurum`);
-  save();
-  renderTreasury();
-  log('Collected '+amount+' aurum from '+route.name+'.');
-}
+    function clearLogs() {
+      if (!requireAdmin('clear logs')) return;
+      state.logs = [];
+      saveState();
+      renderLogs();
+    }
 
-function evaluateEconomy(){
-  const campaignBonus = campaigns.filter(c => c.status === 'active').length * 5;
-  const treasuryStability = Math.floor(treasury / 100);
-  const legionHealth = Object.keys(accounts).filter(k => accounts[k].rank === 'Legion').length * 15;
-  const score = Math.max(10, Math.min(100, Math.floor(treasuryStability + campaignBonus + legionHealth)));
-  document.getElementById('empireStatus').innerHTML = `<strong>Economic evaluation:</strong> Stability score ${score}`;
-}
+    function adminLogin() {
+      const attempt = document.getElementById('adminPassword').value;
+      if (attempt === state.adminPassword) {
+        state.adminAuthenticated = true;
+        document.getElementById('adminPassword').value = '';
+        log('Admin access granted.');
+      } else {
+        log('Admin password incorrect.');
+      }
+      renderAdmin();
+    }
 
-function renderBankInstruments(){
-  // placeholder for dynamic visualization if needed
-}
+    function adminLogout() {
+      state.adminAuthenticated = false;
+      renderAdmin();
+      log('Admin access revoked.');
+    }
 
-function renderLoanRequests(){
-  // placeholder for loan queue details
-}
+    function renderAdmin() {
+      const controls = document.getElementById('adminControls');
+      const status = document.getElementById('adminStatus');
+      const output = document.getElementById('adminOutput');
+      if (state.adminAuthenticated) {
+        controls.style.display = 'block';
+        status.textContent = 'Admin unlocked. Advanced controls are available.';
+      } else {
+        controls.style.display = 'none';
+        status.textContent = 'Admin locked. Enter password to unlock.';
+        if (output) output.innerHTML = '';
+      }
+    }
 
-const romanBankLore = [
-  "The first table of interest is carved in marble.",
-  "A banker without books is like a ship without anchor.",
-  "The Fiscus feeds both soldier and senator.",
-  "Public works are the finest bonds of state.",
-  "A province in debt sows dissent in its fields.",
-  "A prudent loan is a bridge to empire.",
-  "Coins are the language of peace and war.",
-  "The vault that opens too wide invites thieves.",
-  "Debt may win battles or break provinces.",
-  "A market in order is the senator’s crown.",
-  "A road sponsored by the bank is a path to honor.",
-  "Interest is the river that runs through the treasury.",
-  "A strong exchange rate is a silent legion.",
-  "Grain in the vault means peace in the forum.",
-  "The audit is the watchman of the treasury.",
-  "A single poor harvest can topple a crown.",
-  "The banker who fears risk will never fund glory.",
-  "Every contract carries the weight of Rome.",
-  "A project half-funded is a city half-built.",
-  "Tribute must be firm and fair to sustain loyalty.",
-  "Coins flow fastest in the roads the state builds.",
-  "A loan without guarantee is a gambler’s coin.",
-  "Policy and finance must march in step.",
-  "The Imperial bank is the pulse of commerce.",
-  "A stable province bolsters the entire realm.",
-  "The exchange hall is where futures are wagered.",
-  "A wise governor keeps taxes and loyalty balanced.",
-  "Treasury history is the memory of empire.",
-  "Public works win hearts as much as they win roads.",
-  "A bond in the Fiscus is trust made tangible.",
-  "Fabulae of bank heroes are told in the forum.",
-  "The ledger of Rome must never be stained.",
-  "A wealthy province answers a senator’s plea.",
-  "Loans are promises, not simply numbers.",
-  "A faction thrives where coin is scarce.",
-  "Interest rates can lift or crush a city.",
-  "War drains coffers faster than time.",
-  "A province's grain speaks of its future.",
-  "The vault’s door is a line in the public oath.",
-  "To invest in roads is to invest in peace.",
-  "A failing trade route betrays a poor decision.",
-  "The bank’s name is worth more than gold.",
-  "Every audit reveals a new lesson.",
-  "A senate edict can change a market overnight.",
-  "The bank should be seen, not merely counted.",
-  "A loyal province is the empire’s sinew.",
-  "Coins are the children of production and peace.",
-  "A project succeeds when every citizen feels it.",
-  "The exchange rate is the pulse of profit.",
-  "Grain and gold are both food for the state.",
-  "The safest vault often yields the least glory.",
-  "A bank event may be omen or opportunity.",
-  "The richest province may be the wisest one.",
-  "A loan repaid on time is a victory.",
-  "The law of the Fiscus must be absolute.",
-  "A stable treasury makes the world listen.",
-  "Every branch is a face of Roman order.",
-  "Audit the public works, then praise them.",
-  "The best interest rate is the one that sustains.",
-  "A harsh tax ruins harvest as much as a raid.",
-  "The coin that leaves Rome should return richer.",
-  "A project built with pride endures longer.",
-  "A province with a full vault sleeps easier.",
-  "Public works inscribe the bank’s legacy.",
-  "The exchange hall hums with the voices of markets.",
-  "A bank event is the rumor of Rome’s future.",
-  "The ledger records both good omens and bad.",
-  "A public loan should be a beacon not a burden.",
-  "A campaign financed well returns with spoils.",
-  "A healthy treasury is the state’s heart.",
-  "The Fiscus feeds soldiers and senators alike.",
-  "A new road is a new promise to the provinces.",
-  "The vault is where the empire counts its blessings.",
-  "A wise senator understands both war and wealth.",
-  "The bank is the steward of Roman ambition.",
-  "A province’s loyalty is as valuable as gold.",
-  "Borrowing for glory is wise; borrowing for vanity is folly.",
-  "The public works ledger is a record of honor.",
-  "The exchange rate may rise with good news or fear.",
-  "A stable bank instrument is a senator’s pledge.",
-  "The treasury knows the cost of each decision.",
-  "Coins are only as good as the trust behind them."
-];
+    function exportState() {
+      if (!state.adminAuthenticated) { log('Admin access required.'); return; }
+      const output = document.getElementById('adminOutput');
+      output.innerHTML = `<pre style="white-space: pre-wrap; color:#e4d98f;">${JSON.stringify(state, null, 2)}</pre>`;
+    }
 
-const eventChronicles = [
-  "The market in Venezia surged on grain demand",
-  "A caravan from Hispania arrived laden with silver",
-  "A storm delayed eastern trade, shaking confidence",
-  "The consul ordered extra coin to fund the road",
-  "A caravan guard defected with a portion of tolls",
-  "The queen of Nubia sent an envoy seeking loans",
-  "An unexpected harvest spurred speculation in Rome",
-  "A frozen river delayed tribute from the north",
-  "A senator proposed a bond for aqueduct repairs",
-  "A rumor of war drove merchants to the exchange",
-  "A misknown debt caused a bank assistant to falter",
-  "The vault guard discovered an old shipment of coin",
-  "A shipwreck freed up grain for provincial sale",
-  "A traveling banker offered new credit terms",
-  "A festival boosted the demand for luxury metals",
-  "A rebellion in the hills cut a trade route short",
-  "A new treaty promised safer passage for caravans",
-  "A public work received unexpected private donors",
-  "A wealthy citizen donated to the treasury coffers",
-  "A strange omen frightened traders at the forum",
-  "A new exchange decree stabilized Denarius rates",
-  "A spate of loans improved commerce in the market",
-  "A drought in the south reduced grain yield sharply",
-  "A legion’s payrate increased due to successful raids",
-  "An old contract was renewed with better terms",
-  "A heaven-sent rain eased the famine in a province",
-  "A caravan taxed twice complained before the senate",
-  "A scandal in the exchange hall called for audit",
-  "A new canal reduced shipping costs along the coast",
-  "A prince requested a loan for festival expenses",
-  "A banker from the east spoke of silver shortages",
-  "A commotion in the vault prompted an investigation",
-  "A stable trade route spread wealth through the region",
-  "A merchant guild invested in the aqueduct repair",
-  "A sudden festival doubled the treasury’s receipts",
-  "A law was proposed to cap loan interest rates",
-  "A frontier province sent surplus grain to Rome",
-  "A loyal governor increased his province’s efficiency",
-  "A feast in the capital reduced the treasury reserves",
-  "A new market opened near the harbor, drawing crowds",
-  "A famous architect sought bank funding for a temple",
-  "A functionary was replaced after a terrible audit",
-  "A profitable voyage returned with exotic goods",
-  "A debt registry was updated in the imperial ledger",
-  "A festival gift inspired more donations to public works",
-  "A winter storm froze a critical supply line",
-  "A bold loan saved a struggling province from ruin",
-  "A treaty with the east increased exchange volumes",
-  "A senator invested in the reconstruction of roads",
-  "A shipment of spices raised hopes for additional revenue",
-  "A royal wedding demanded urgent treasury support",
-  "A stable canal route helped repair a failing province",
-  "A caravan leader paid tribute in full and on time",
-  "A new bank officer earned praise from the consul",
-  "A soldier found a hidden stash of old coins",
-  "A minor rebellion cost the treasury precious coin",
-  "A harvest review recommended easing provincial burdens",
-  "A public festival drew crowds and new tax revenue",
-  "A scholar published a treatise on bank interest policies",
-  "A coup attempt sent shockwaves through the treasury",
-  "A diligent auditor uncovered a ledger discrepancy",
-  "A debt collection forced a branch to reform its practices",
-  "A new trade route promised more durable prosperity",
-  "A sickly province was granted loan relief by decree",
-  "A brilliant merchant proposed a joint enterprise",
-  "A flood repaired by public work improved commerce",
-  "A stable coin was minted to calm the market",
-  "A spy report warned of unrest in the eastern provinces",
-  "A noble family pledged gold for the bank’s new project",
-  "A sudden famine tested the treasury’s generosity",
-  "A new temple offered to house the bank’s archives",
-  "A siege required emergency funds from the Fiscus",
-  "A military victory returned with tribute coffers full",
-  "A diplomatic gift changed the exchange's tone",
-  "A storm delayed the caravan but spared the coins",
-  "A wise law reduced loan abuses in the provinces",
-  "A young banker discovered a more efficient ledger method",
-  "A scorch of summer pressured the public works budgets",
-  "A governor’s decree improved trade route security",
-  "A sudden tax holiday delighted merchants nearby",
-  "A civic ceremony celebrated the bank’s new charter",
-  "A provincial revolt was defused with rapid aid",
-  "A rare metal shipment strengthened the exchange rate",
-  "A loyal guard recovered treasures from a shipwreck",
-  "A festival of Neptune increased demand for imported goods",
-  "A rainy season restored the northern harvests",
-  "A senator’s favor secured a powerful loan guarantee",
-  "A wealthy merchant funded the restoration of fountains",
-  "A new border complex improved caravan safety",
-  "A quiet market day turned into an unexpected windfall",
-  "A judge ruled in favor of a bank contract dispute",
-  "A humble festival gift brightened the treasury’s ledger",
-  "A legendary loan repaid with honor became a story",
-  "A merchant cohort arrived with silk and spices for trade",
-  "A winter famine prompted the bank to open relief funds",
-  "A candidate for consul promised tax relief and protection",
-  "A rare jewel shipment tempted the exchange to expand",
-  "A loyal province offered grain in exchange for long-term loans",
-  "A royal decree required funding for a new aqueduct",
-  "A public debt forgiveness restored confidence in the banking system",
-  "A storm-swept coast delayed trade but preserved the cargo",
-  "A caravan ambush spurred more investment in road security",
-  "A busy market day raised hopes for a generous treasury yield"
-];
+    function resetState() {
+      if (!state.adminAuthenticated) { log('Admin access required.'); return; }
+      if (!confirm('Reset all bank data to defaults?')) return;
+      state = { ...DEFAULT_STATE };
+      saveState();
+      renderAll();
+      renderAdmin();
+      log('Imperium Bank state reset to defaults.');
+    }
 
-const fiscalManuscript = [
-  "Record the yield of the new road before the harvest.",
-  "Count every denarius and gift in the ledger of the bank.",
-  "Note the price of grain when the supply is plentiful.",
-  "Write down every tribute collected from the provinces.",
-  "Mark the coin given to the legion as investment in safety.",
-  "Note the interest rate signed by the senator in the forum.",
-  "List the road repairs financed by the treasury this year.",
-  "Remember the debt of the eastern merchant for future audits.",
-  "Study the exchange of talents and drachmas across the sea.",
-  "Record the festival donations as public works seed money.",
-  "Note the grain shipped from Egypt to feed the capital.",
-  "Write the stable tax rate that kept the provinces loyal.",
-  "Count the loans issued to captains supporting campaigns.",
-  "Track the latest bank event to learn from it.",
-  "Record the death of a branch, replaced by a stronger bank.",
-  "Write the contract of the aqueduct builder in full.",
-  "Carve the pledge to keep the treasury safe and sound.",
-  "List every war fund approved by the Imperial Senate.",
-  "Write the names of provinces whose vaults are flourishing.",
-  "Record each bond sold to citizens for public works.",
-  "Count the coins invested in temple and road improvements.",
-  "Note the governor who earned the highest loyalty rating.",
-  "Write the interest saved by prudent exchange decisions.",
-  "Record the gifts from foreign princes to the treasury.",
-  "Track every campaign cost against its political gain.",
-  "List the provinces that paid tribute ahead of schedule.",
-  "Write the decree that raised the bank’s prestige among traders.",
-  "Note the public work that won the most acclaim in Rome.",
-  "Track the bank events that changed the year’s forecast.",
-  "Record the loan that was repaid in full and on time.",
-  "Write the names of artisans who built the new roads.",
-  "Note the festival that raised the market’s confidence.",
-  "Track the stability of the exchange across many months.",
-  "List the provinces with the healthiest vaults and why.",
-  "Write the policy that lowered the tribute burden fairly.",
-  "Record the first contract signed under the new bank banner.",
-  "Note the exchange rate that became a model for others.",
-  "Track the yield of every trade route during the harvest.",
-  "List the roads rebuilt using funds from the imperial bank.",
-  "Write the bond that held the most trust among citizens.",
-  "Note the campaign that earned both glory and coin.",
-  "Track the number of new citizens enrolled in the bank hall.",
-  "List the public works that changed the city’s face forever.",
-  "Write the audit that saved the treasury from disaster.",
-  "Note the tax decision that balanced loyalty and profit.",
-  "Track the grain shipments that sustained the winter months.",
-  "List the bank events that shaped the empire’s fortunes.",
-  "Write the pledge of the senate to protect the bank’s vaults.",
-  "Note the exchange news that made the headlines in the forum.",
-  "Track the interest savings from the new loan agreements.",
-  "List the heroes who helped the bank survive a crisis.",
-  "Write the decree that improved the coastal caravans’ safety.",
-  "Note the governor who returned the most to the treasury.",
-  "Track the influence of trade routes on provincial wealth.",
-  "List the public works that inspired the people of Rome.",
-  "Write the bank event that became a parable for future bankers.",
-  "Note the policy that steadied the exchange in troubled times.",
-  "Track the loyalty of provinces during a harsh winter.",
-  "List the loans granted to merchants for foreign expeditions.",
-  "Write the story of the bank instrument that funded peace.",
-  "Note the tide of gold that came from the eastern caravan.",
-  "Track the building of the new aqueduct through the years.",
-  "List the provinces that turned their vaults into treasures.",
-  "Write the final balance of the year in the imperial ledger.",
-  "Note the public work that symbolized Roman order and power."
-];
+    function changeAdminPassword() {
+      if (!state.adminAuthenticated) { log('Admin access required.'); return; }
+      const newPass = document.getElementById('newAdminPassword').value.trim();
+      if (!newPass) { log('Enter a new password to update.'); return; }
+      state.adminPassword = newPass;
+      document.getElementById('newAdminPassword').value = '';
+      saveState();
+      log('Admin password updated.');
+    }
 
-function buildLedgerOfRome(){
-  romanBankLore.forEach((line,index) => {
-    if(index % 5 === 0) recordStateHistory('Lore', 'Ledger', 0);
-  });
-}
-
-function compileBankAtlas(){
-  provinces.forEach(prov => {
-    const entry = {when:new Date().toISOString(), type:'Province', source:prov.name, amount:prov.vault};
-    stateHistory.unshift(entry);
-  });
-  if(stateHistory.length > 120) stateHistory = stateHistory.slice(0,120);
-  save();
-}
-
-function auditLedgerAndReport(){
-  renderReports();
-  renderHistory();
-  renderBankEvents();
-}
-
-function updateBankDashboard(){
-  renderExchange();
-  renderCampaigns();
-  renderWorks();
-  renderBankEvents();
-  renderReports();
-  renderTradeRoutes();
-  evaluateEconomy();
-}
-
-// Seed initial historic entries for the expanded Roman bank simulation.
-(function seedExtendedHistory(){
-  if(stateHistory.length === 0){
-    fiscalManuscript.slice(0, 20).forEach((line, idx) => {
-      stateHistory.push({when:new Date(Date.now() - (idx * 86400000)).toISOString(), type:'Record', source:'Seed', amount:0, text:line});
-    });
-    save();
-  }
-})();
-
-setInterval(() => {
-  if(Math.random() > 0.5) processBankEvent();
-  if(Math.random() > 0.6) evaluateEconomy();
-}, 25000);
-
-/* =========================
-   INIT
-   ========================= */
-renderBranches();
-renderTreasury();
-renderPayroll();
-renderLogs();
-renderSenateAssemblies();
-renderEmpireConsole();
-renderTribute();
-renderAdminPanel();
-renderExchange();
-renderCampaigns();
-renderWorks();
-renderBankEvents();
-renderReports();
-renderHistory();
-renderTradeRoutes();
-updateExchangeRateOptions();
-updateAdminDisplay();
-
-const ancientBankArchive = [
-  "The dry ledger of the first silver ceremony lies under the basilica.",
-  "A formula for interest forgiveness was carved on a stone tablet.",
-  "The first provincial bond was signed with blood and ink.",
-  "A merchant prayer for safe passage is recorded in the archive.",
-  "When the harvest failed, the bank sent coin before grain.",
-  "A public work was bankrolled by gifts from the emperor.",
-  "The exchange of denarii and drachmas founded the coastal route.",
-  "A treaty in the archive guaranteed the safety of bankers.",
-  "A vault inspection saved a province from rebellion.",
-  "A senator’s petition for loan relief is catalogued in red.",
-  "The first true bank had bronze doors and iron ledgers.",
-  "A debt scroll was burned upon the consul’s decree.",
-  "The bank’s oath was recited at every public festival.",
-  "A grain contract with Egypt was sealed in the vault hall.",
-  "The bank ledger of a winter famine shows both hope and fear.",
-  "A trade treaty with Arabia appears in faded ink.",
-  "The first branch in Lusitania was built with local silver.",
-  "A loan for cavalry horses is still cited in bank manuals.",
-  "A legendary banker is said to have calmed a market panic.",
-  "The treasury’s first audit is detailed in a narrow scroll.",
-  "The name of the banker who funded the road to Samnite lies therein.",
-  "A decree to cap interest rates is written in the senate margin.",
-  "The first public work financed by bonds was the forum well.",
-  "A stolen ledger was recovered from a mountain bandit.",
-  "A governor used bank funds to avert a river flood.",
-  "The exchange rate of the first denarius is noted alongside the feast cost.",
-  "A caravan tax dispute ended with a banker’s mediation.",
-  "A loyal province was rewarded with an interest-free loan.",
-  "The bank’s seal was forged from bronze and flame.",
-  "A loan to the legion was repaid with captured treasure.",
-  "The first bank event was a gift from a foreign king.",
-  "A bond sold to citizens financed the aqueduct repair.",
-  "The vault gatekeeper was celebrated for his honesty.",
-  "A debt transcript was read aloud in the imperial forum.",
-  "A festival donation to the bank became an annual ritual.",
-  "The first public work cataloged is the city gate restoration.",
-  "A bank official wrote of the market’s changing tides.",
-  "A ship carrying silver sank and the bank absorbed the loss.",
-  "A tax rate decision was debated under the oak of the guild.",
-  "The first loan in the archive is to a poet, of all things.",
-  "A decree raised the tribute from the provinces by a modest sum.",
-  "A bank event described a caravan saved from bandits by coin.",
-  "A ledger entry praises a governor for returning grain to the people.",
-  "A provincial vault was fortified after a speech in the senate.",
-  "A public work project was stopped when the bank demanded accounting.",
-  "The bank’s oldest contract was written in golden ink.",
-  "A festival of Mars included a tribute from the treasury.",
-  "The archive holds an edict on the proper use of borrowed funds.",
-  "A loan instrument carries the name of the first consul banker.",
-  "A trade route toll was recorded in the same scroll as a triumph.",
-  "The bank’s first record of exchange included Egyptian talents.",
-  "A merchant guild’s donation to the bank is still honored.",
-  "A harvest blessing and a loan decree were written side by side.",
-  "A provincial revolt was quelled with swift bank advances.",
-  "The bank’s ledger lists both merchants and soldiers as clients.",
-  "A flood of silver from the east altered the exchange rate.",
-  "A bond backed by public works was considered sacred.",
-  "A public work named in the archive served both citizens and soldiers.",
-  "A decree to limit loan interest is inscribed on a temple wall.",
-  "A bank event described a storm-damaged harbor and the recovery.",
-  "A trusted banker recorded the names of loyal governors.",
-  "A contract for grain payment was witnessed by three senators.",
-  "A loan request from a provincial chief was granted with caution.",
-  "A new branch opened on the Via Flaminia with fanfare.",
-  "A festival gift to the bank made its way into the public ledger.",
-  "A mighty road project in the archive is still admired today.",
-  "A bank representative in the east wrote of silver shortages.",
-  "A loan to a shipbuilder grew into a profitable trade route.",
-  "A bank event recorded a sudden rise in exchange due to festival demand.",
-  "A tax collection from Hispania arrived ahead of the season.",
-  "A provincial grain shipment saved the capital from famine.",
-  "A public work earned praise from the emperor and bankers alike.",
-  "The archive notes the first loan offered to a foreign prince.",
-  "A famous banker left instructions for future ledgers.",
-  "A bank official’s journal mentions a storm, a loan, and a triumph.",
-  "A loan forgiveness decree is listed as both mercy and policy.",
-  "The bank’s seal appears on a contract for the city gate repairs.",
-  "A campaign ledger in the archive lists both costs and glory.",
-  "A trade treaty with the east is recorded alongside the exchange method.",
-  "A provincial vault report mentions an unusually loyal people.",
-  "A supply caravan diverted to feed the army is chronicled in detail.",
-  "A festival of Saturn brought gifts to the bank and to the populace.",
-  "A bank event describes the bond between Rome and a foreign city.",
-  "A decree made the bank the guardian of public works funding.",
-  "A bond sold to citizens financed a temple and refreshed faith.",
-  "A loan contract to a hero was repaid in captured silver.",
-  "The archive contains a cautionary tale about excessive interest.",
-  "A province’s loyalty was maintained by careful tax decisions.",
-  "The bank’s first ledger of loans mentions merchants and magistrates.",
-  "A public work project in the archive spans five seasons of labor.",
-  "A temple donation to the bank is carved with thanks.",
-  "A loan request for ships is recorded with a merchant’s seal.",
-  "A bank event was triggered by a merchant ship returning rich.",
-  "A decree to fund the aqueduct is written in the senate’s hand.",
-  "A loan to the eastern governor was covered by caravan tolls.",
-  "A province’s grain surplus was turned into a bank profit.",
-  "A festival of Neptune boosted the coastal trade receipts.",
-  "A bank inspector’s report led to a safer vault strategy.",
-  "A debt record from the archive teaches a prudent lesson.",
-  "A loan to a construction crew built both roads and trust.",
-  "A rival bank’s failure is noted as a warning in the ledger.",
-  "A provincial revolt’s cost is detailed in a somber entry.",
-  "A trade route sponsorship appears as a proud achievement in the archive.",
-  "A public work financed by a bond lasted for generations.",
-  "A bank event’s aftermath brought both honor and caution.",
-  "A wise decree balanced tax, tribute, and provincial loyalty.",
-  "A loan officer’s note explains how to price risk in war.",
-  "A storm forced the bank to open emergency grain reserves.",
-  "A bank’s vault guard wrote of the day the ledger nearly burned.",
-  "A festival investment returned in the form of grateful citizens.",
-  "A loan for a bridge project is recorded with precise engineering costs.",
-  "A trade route’s tolls were invested back into public works.",
-  "A provincial audit saved the treasury from an unseen drain.",
-  "A new public road linked two provinces and improved commerce.",
-  "A bank event recorded the day the market discovered a new route.",
-  "A loan repayment ceremony became a symbol of Roman trust.",
-  "A festival of Mars inspired a surge in military financing.",
-  "A bond issuance for temple repair became a patriotic act.",
-  "A loan to a distant governor was secured by caravan profits.",
-  "A public work’s progress was updated in the archive weekly.",
-  "A bank event’s omen was taken seriously by the consul.",
-  "A tax relief decree kept a province from rebelling.",
-  "A loan for a diplomacy gift strengthened foreign relations.",
-  "A vault inspector’s praise appears in the bank’s highest records.",
-  "A payment from a foreign envoy filled the exchange hall.",
-  "A public work’s completion was celebrated with coin and song.",
-  "A bond matured with the careful support of the senate.",
-  "A festival donation to the bank became part of the city’s legend.",
-  "A loan contract to a merchant prince is still studied by bankers.",
-  "A trade route’s first tolls were recorded in the bank’s ledger.",
-  "A sovereign gift to the bank appears in the archive’s proudest pages.",
-  "A public work financed by the bank changed the city forever.",
-  "A loan officer’s journal recorded a new method for valuing risk.",
-  "A province’s vault inspection uncovered hidden treasures.",
-  "A bank event’s warning guided the treasury through a crisis.",
-  "A festival of commerce brought new merchants to the exchange.",
-  "A bond originally issued for the aqueduct repaid itself with interest.",
-  "A loan to the eastern armory was managed with exceptional care.",
-  "A public work’s architect received both coin and praise.",
-  "A trade treaty with the north improved the exchange by degrees.",
-  "A vault guard’s honesty was celebrated in the bank’s earliest records.",
-  "A loan for a foreign delegation was repaid with valuable gifts.",
-  "A public work’s ledger entry shows the cost of every stone.",
-  "A bank event’s fortune changed the outlook of the province.",
-  "A festival investment created new patrons of the bank.",
-  "A loan collection from a distant province was completed in full.",
-  "A bond issuance for the city walls was signed by the consul.",
-  "A public work’s progress motivated the citizens and soldiers alike.",
-  "A bank event’s report was used to shape the senate’s policy.",
-  "A loan for a grain fleet arrived just before the harvest famine.",
-  "A public work funded by the bank became an enduring monument.",
-  "A trade route’s profits were reinvested in coastal defenses.",
-  "A vault inspection’s findings improved provincial loyalty.",
-  "A festival of wealth filled the treasury with both gold and devotion.",
-  "A bank official’s ledger entry shows the first interest rates ever recorded.",
-  "A loan to the mountain garrison protected the northern passes.",
-  "A public work’s completion was commemorated with a marble plaque.",
-  "A trade route’s first successful season was marked with celebration.",
-  "A provincial tax plan was recorded as a model for future governors.",
-  "A bank event’s success provided courage during uncertain times.",
-  "A loan repayment ceremony became tradition for grateful provinces.",
-  "A public work’s architect inscribed his name on the column base.",
-  "A festival of Neptune’s tribute improved the exchange flow.",
-  "A loan issued for a temple renovation strengthened faith and confidence.",
-  "A trade route’s safe return brought exotic wares to Rome’s markets.",
-  "A province’s vault increase was celebrated with civic feasts.",
-  "A bank event’s message traveled through the forums like a whisper.",
-  "A public work funded by a bond was hailed as a merchant’s gift.",
-  "A loan officer’s advice saved the treasury from an ill-fated campaign.",
-  "A trade route’s tolls were used to reinforce the city walls.",
-  "A festival donation became the seed for a future public work.",
-  "A loan request from a foreign dignitary was granted with caution.",
-  "A bank event’s omen guided the treasury to new contracts.",
-  "A vault inspection’s praise appears in the bank’s proudest pages.",
-  "A loan to a governor was repaid with both wealth and gratitude.",
-  "A public work financed by the bank changed the city’s skyline."
-];
-
-const imperialFinanceManual = [
-  "Chapter 1: The heart of the bank is the ledger and the oath.",
-  "Chapter 2: Interest must balance reward with civic stability.",
-  "Chapter 3: Provinces are partners, not merely sources of tribute.",
-  "Chapter 4: Public works create both jobs and lasting legacy.",
-  "Chapter 5: Loans to campaigns are investments in the state’s strength.",
-  "Chapter 6: Trade routes are the arteries of imperial wealth.",
-  "Chapter 7: Exchange rates should reflect both promise and peril.",
-  "Chapter 8: Vault health is measured in trust as much as coin.",
-  "Chapter 9: Bank events should inform strategy rather than frighten.",
-  "Chapter 10: The emperor’s seal supports the bank’s authority.",
-  "Chapter 11: A wise banker listens to senators, merchants, and gods.",
-  "Chapter 12: The ledger records decisions for generations to come.",
-  "Chapter 13: Loans must be priced so that mercy is still profitable.",
-  "Chapter 14: A public work should unite people through shared pride.",
-  "Chapter 15: Tribute must be firm but never cruel.",
-  "Chapter 16: A healthy exchange inspires foreign merchants.",
-  "Chapter 17: Provinces with strong vaults can withstand any storm.",
-  "Chapter 18: Campaigns funded well return with spoils and praise.",
-  "Chapter 19: A bank event that teaches is worth more than a coin.",
-  "Chapter 20: The bank’s credibility is its most valuable asset.",
-  "Chapter 21: Record every contract, however small, without fail.",
-  "Chapter 22: The first duty is to preserve the public trust.",
-  "Chapter 23: A bond backed by the state is as good as gold.",
-  "Chapter 24: When markets waver, act steadily and wisely.",
-  "Chapter 25: A province’s loyalty must be nurtured with both coin and care.",
-  "Chapter 26: Investment in roads returns to the treasury manyfold.",
-  "Chapter 27: The vault must be defended by both walls and law.",
-  "Chapter 28: A bank event may be omen and opportunity together.",
-  "Chapter 29: The right loan can save a city from ruin.",
-  "Chapter 30: A strong exchange rate is a silent guard at the border.",
-  "Chapter 31: The bank should never be the cause of a festival’s end.",
-  "Chapter 32: Loans to merchants encourage trade and prosperity.",
-  "Chapter 33: Public works are the finest memorials for a ruler.",
-  "Chapter 34: The ledger must reflect both coin and political reality.",
-  "Chapter 35: A poor harvest can be turned by wise policy.",
-  "Chapter 36: The bank must hold enough coin for both war and peace.",
-  "Chapter 37: Keep the records simple and the rules clear.",
-  "Chapter 38: The province that prospers is the bank’s truest ally.",
-  "Chapter 39: A campaign financed by the treasury must justify its costs.",
-  "Chapter 40: The bank’s oath is renewed with every audit.",
-  "Chapter 41: Interest rates should respond to both need and risk.",
-  "Chapter 42: The exchange hall is where foreign trust is earned.",
-  "Chapter 43: A bond should be marketed with honesty and honor.",
-  "Chapter 44: A bank event can highlight the bank’s resilience.",
-  "Chapter 45: Fund public works that serve people and state alike.",
-  "Chapter 46: Provinces that pay tribute on time are to be rewarded.",
-  "Chapter 47: Loans should support growth, not greed.",
-  "Chapter 48: The bank should always be ready for sudden events.",
-  "Chapter 49: The ledger is the bank’s most sacred memory.",
-  "Chapter 50: A strong bank builds every pillar of Rome."
-];
-
-function renderBankArchive(){
-  const archive = ancientBankArchive.slice(0, 12).map(entry => `<div>${entry}</div>`).join('');
-  if(document.getElementById('adminAuditOutput')){
-    document.getElementById('adminAuditOutput').innerHTML = archive;
-  }
-}
-
-function renderFinanceManual(){
-  const manual = imperialFinanceManual.slice(0, 12).map(entry => `<div>${entry}</div>`).join('');
-  if(document.getElementById('projectStatus')){
-    document.getElementById('projectStatus').innerHTML += `<div class="card"><strong>Finance Manual</strong><br>${manual}</div>`;
-  }
-}
-
-renderBankArchive();
-renderFinanceManual();
-
-const bankEpicAppendix = [
-  "The final page of the ledger carries the blessing of Rome.",
-  "The appendix lists both triumph and cautionary debt.",
-  "A noble banker’s motto is carved into the margin.",
-  "The appendix reminds us that coin is not the only currency.",
-  "A strong bank archive is a cornerstone of imperial memory.",
-  "The appendix notes the importance of balanced tribute.",
-  "A public work financed in the appendix is written with pride.",
-  "The appendix recounts the first loan to a foreign prince.",
-  "A campaign ledger in the appendix teaches strategy and economy.",
-  "The appendix warns that too much wealth can still breed dissent.",
-  "A loan instrument described here served the public good.",
-  "The appendix reminds the banker to listen to both senator and people.",
-  "A trade route described in the appendix still yields profit.",
-  "The appendix records the first coin minted for the bank.",
-  "A festival funded in the appendix became a city tradition.",
-  "The appendix reminds the banker that every audit is an opportunity.",
-  "A province whose history fills the appendix was once in peril.",
-  "The appendix records the vault that withstood a siege.",
-  "A loan described here bought both grain and loyalty.",
-  "The appendix contains a note of thanks from a grateful governor.",
-  "A public work in the appendix restored a broken bridge.",
-  "The appendix praises the senator who balanced tax and mercy.",
-  "A bank event in the appendix is remembered as a turning point.",
-  "The appendix warns of loans taken for vanity rather than need.",
-  "A chapter from the appendix became a guide for future bankers.",
-  "The appendix marks the years of peace and the years of debt.",
-  "A bond in the appendix financed the safety of the province.",
-  "The appendix notes the day the exchange stabilized the realm.",
-  "A loan issued under a full moon is recorded in the appendix.",
-  "The appendix contains the first contract with an eastern king.",
-  "A public work whose cost is in the appendix still stands today.",
-  "The appendix reminds the banker to set policy with courage.",
-  "A province saved from famine appears in the appendix ledger.",
-  "The appendix records the first merchant loan to return in full.",
-  "A trade route’s foundation is described in the appendix scroll.",
-  "The appendix honors the vault keeper for his steadfast watch.",
-  "A festival in the appendix brought both coin and goodwill.",
-  "The appendix encourages prudent risk in service of Rome.",
-  "A bank event in the appendix became a lesson for the senate.",
-  "The appendix includes a prayer to the gods of commerce.",
-  "A project financed by the appendix bond became a marvel.",
-  "A loan repaid with honor is celebrated in the appendix.",
-  "The appendix reminds readers that trust is the bank’s true treasure.",
-  "A public work in the appendix gave water to the thirsty city.",
-  "The appendix describes the first use of a provincial toll.",
-  "A governor’s wise tax plan is recorded in the appendix.",
-  "The appendix notes the bank event that heralded a new era.",
-  "A loan to build ships is described in the appendix ledger.",
-  "The appendix praises the architect of the city’s roads.",
-  "A festival gift in the appendix became a lasting legacy.",
-  "The appendix warns against banking without conscience.",
-  "A province’s vault health is celebrated on the appendix pages.",
-  "The appendix includes a senator’s speech on fiscal prudence.",
-  "A campaign cost in the appendix is balanced by its success.",
-  "The appendix records a loan to a heroic general.",
-  "A bond issued in the appendix helped finish the temple.",
-  "The appendix describes the day the market ceased to panic.",
-  "A bank event recorded in the appendix shaped policy forever.",
-  "The appendix reminds bankers that every decision affects the people.",
-  "A loan in the appendix paid for winter grain and hope.",
-  "The appendix includes the founders’ first banking oath.",
-  "A public work in the appendix continues to serve the city.",
-  "The appendix praises the bank that withstood a great storm.",
-  "A trade route in the appendix connected distant shores.",
-  "The appendix holds the record of the first audit by the emperor.",
-  "A loan described in the appendix carried the weight of tradition.",
-  "The appendix warns that too much greed can topple the finest vault.",
-  "A province’s tribute in the appendix paid for peace and protection.",
-  "The appendix recounts the first time coin flowed to the provinces.",
-  "A public work in the appendix helped farmers and merchants alike.",
-  "The appendix encourages bankers to lead with both head and heart.",
-  "A bank event in the appendix brought news of a foreign alliance.",
-  "The appendix notes the day the treasury opened relief funds.",
-  "A loan repayment ceremony in the appendix became tradition.",
-  "The appendix reminds the bank that prosperity must be shared.",
-  "A trade route’s risk and reward are listed in the appendix.",
-  "A bond listed in the appendix became a symbol of civic trust.",
-  "The appendix records the first time the bank financed a temple.",
-  "A festival donation in the appendix warmed the city’s soul.",
-  "The appendix promises that the vault will remain steadfast.",
-  "A loan to rebuild a bridge is described with precise cost.",
-  "The appendix honors the merchant who repaid his debt faithfully.",
-  "A bank event in the appendix foretold a season of plenty.",
-  "The appendix memorializes a province that prospered through trade.",
-  "A public work in the appendix made the market more secure.",
-  "The appendix says the greatest currency is the trust of Rome.",
-  "A loan in the appendix saved a governor’s reputation and province.",
-  "The appendix records the first interest rate decreed by the senate.",
-  "A bond in the appendix funded the building of a city wall.",
-  "The appendix praises the bank that never forgot the people.",
-  "A trade route in the appendix was kept open by wise funding.",
-  "The appendix reminds bankers to keep their promises firm.",
-  "A loan agreement in the appendix carried the weight of legacy.",
-  "The appendix records the bank event that strengthened the exchange.",
-  "A public work described in the appendix stands as a monument.",
-  "A bank event in the appendix became the stuff of legend.",
-  "The appendix advises that coins should serve the common good.",
-  "A loan to a foreign diplomat appears as an act of statesmanship.",
-  "The appendix remembers the vault guardian who guarded the people.",
-  "A public work financed from the appendix bond served both rich and poor.",
-  "The appendix warns that a weak vault invites instability.",
-  "A loan in the appendix turned a crisis into opportunity.",
-  "The appendix concludes with a pledge to safeguard Rome’s wealth."
-];
-
-function renderEpicAppendix(){
-  const page = bankEpicAppendix.slice(0,10).map(line => `<div>${line}</div>`).join('');
-  if(document.getElementById('empireStatus')){
-    document.getElementById('empireStatus').innerHTML += `<div class="card"><strong>Epic Appendix</strong><br>${page}</div>`;
-  }
-}
-
-renderEpicAppendix();
-</script>
+    renderAll();
+  </script>
 </body>
 </html>
