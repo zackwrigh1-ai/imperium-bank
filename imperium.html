@@ -36,6 +36,7 @@
       <button onclick="switchView('legions')">Denarii Branches</button>
       <button onclick="switchView('tribute')">Tribute</button>
       <button onclick="switchView('senate')">Senate</button>
+      <button onclick="switchView('players')">Players</button>
       <button onclick="switchView('logs')">Oracle Logs</button>
       <button onclick="switchView('admin')">Admin</button>
     </nav>
@@ -59,6 +60,16 @@
             <select id="branchTransferTarget"></select>
             <input id="branchTransferAmount" type="number" min="0" placeholder="Amount" />
             <button class="action wide-button" onclick="transferToBranch()">Send to Branch</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Legionary Pay</h3>
+          <p class="small">Distribute salaries to legions from the treasury.</p>
+          <label for="payAmount">Denarii per legion</label>
+          <input id="payAmount" type="number" min="0" placeholder="Amount per branch" />
+          <button class="action wide-button" onclick="payAllLegions()">Pay All Legions</button>
+          <div style="margin-top:12px; font-size:0.9rem; opacity:0.8;">
+            <div id="payStatus"></div>
           </div>
         </div>
         <div class="card">
@@ -130,7 +141,31 @@
       <div class="log" id="logBox"></div>
     </section>
 
+    <section id="players" class="panel">
+      <h2>Players & Ranks</h2>
+      <div class="card-row">
+        <div class="card">
+          <h3>Add Player</h3>
+          <label for="newPlayerName">Player name</label>
+          <input id="newPlayerName" placeholder="Enter player name" />
+          <label for="newPlayerRank" style="margin-top:12px; display:block;">Starting rank</label>
+          <select id="newPlayerRank">
+            <option value="Citizen">Citizen</option>
+            <option value="Consul">Consul</option>
+            <option value="Senator">Senator</option>
+            <option value="Emperor">Emperor</option>
+          </select>
+          <button class="action wide-button" style="margin-top:8px;" onclick="addPlayer()">Add Player</button>
+        </div>
+        <div class="card">
+          <h3>Player Registry</h3>
+          <div id="playerList"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="admin" class="panel">
+
       <h2>Admin Panel</h2>
       <div class="card-row">
         <div class="card">
@@ -170,6 +205,10 @@
         legio2: { id:'legio2', name:'Legio II', balance: 420 },
         legio3: { id:'legio3', name:'Legio III', balance: 630 }
       },
+      players: {
+        player1: { id: 'player1', name: 'Player One', rank: 'Citizen' },
+        player2: { id: 'player2', name: 'Player Two', rank: 'Senator' }
+      },
       logs: [],
       currentRank: 'Emperor',
       proposal: { id: null, text: '', yes: 0, no: 0, status: 'none' },
@@ -183,7 +222,7 @@
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (!saved || typeof saved !== 'object') throw new Error('empty');
-        return { ...DEFAULT_STATE, ...saved, province: { ...DEFAULT_STATE.province, ...(saved.province || {}) }, proposal: { ...DEFAULT_STATE.proposal, ...(saved.proposal || {}) }, accounts: { ...DEFAULT_STATE.accounts, ...(saved.accounts || {}) } };
+        return { ...DEFAULT_STATE, ...saved, province: { ...DEFAULT_STATE.province, ...(saved.province || {}) }, proposal: { ...DEFAULT_STATE.proposal, ...(saved.proposal || {}) }, accounts: { ...DEFAULT_STATE.accounts, ...(saved.accounts || {}) }, players: { ...DEFAULT_STATE.players, ...(saved.players || {}) } };
       } catch (error) {
         return { ...DEFAULT_STATE };
       }
@@ -196,6 +235,7 @@
         province: state.province,
         tributeLedger: state.tributeLedger,
         accounts: state.accounts,
+        players: state.players,
         logs: state.logs,
         currentRank: state.currentRank,
         proposal: state.proposal,
@@ -234,6 +274,7 @@
       renderBranches();
       renderTribute();
       renderSenate();
+      renderPlayers();
       renderLogs();
       renderAdmin();
     }
@@ -251,6 +292,7 @@
             <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
               <button class="action" onclick="adjustBranch('${account.id}', 100)">+100</button>
               <button class="action" onclick="adjustBranch('${account.id}', -100)">-100</button>
+              <button class="action" style="background:linear-gradient(180deg,#d97a6e,#a85a4a);" onclick="deleteBranch('${account.id}')">Delete</button>
             </div>
           </div>`;
       }).join('');
@@ -267,6 +309,34 @@
       state.accounts[nextId] = { id: nextId, name, balance: 0 };
       document.getElementById('newBranchName').value = '';
       log(`Forged new branch: ${name}.`);
+      saveState();
+      renderBranches();
+    }
+
+    function deleteBranch(id) {
+      if (!requireAdmin('delete a branch')) return;
+      const account = state.accounts[id];
+      if (!account) return;
+      if (!confirm(`Delete branch "${account.name}"? This action cannot be undone.`)) return;
+      delete state.accounts[id];
+      log(`Branch "${account.name}" has been dissolved.`);
+      saveState();
+      renderBranches();
+    }
+
+    function payAllLegions() {
+      if (!requireAdmin('pay the legions')) return;
+      const amount = Number(document.getElementById('payAmount').value);
+      if (Number.isNaN(amount) || amount <= 0) { log('Enter a valid pay amount.'); return; }
+      const legionCount = Object.keys(state.accounts).length;
+      const totalCost = amount * legionCount;
+      if (totalCost > state.treasury) { log('Not enough denarii in treasury to pay all legions.'); return; }
+      Object.values(state.accounts).forEach(account => {
+        account.balance += amount;
+      });
+      state.treasury -= totalCost;
+      document.getElementById('payAmount').value = '';
+      log(`Paid ${amount} denarii to ${legionCount} legions. Total cost: ${totalCost} denarii.`);
       saveState();
       renderBranches();
     }
@@ -409,6 +479,61 @@
       }
       saveState();
       renderSenate();
+    }
+
+    function renderPlayers() {
+      const playerList = Object.values(state.players).map(player => `
+        <div class="card">
+          <strong>${player.name}</strong><br>
+          Rank: <span style="font-weight:bold;">${player.rank}</span>
+          <div style="margin-top:10px;">
+            <select onchange="assignRank('${player.id}', this.value)" style="width:100%; padding:8px; border:1px solid #3d2f13; border-radius:6px; background:#12100a; color:#f5e6ab; margin-bottom:8px;">
+              <option value="">Change rank...</option>
+              <option value="Citizen">Citizen</option>
+              <option value="Consul">Consul</option>
+              <option value="Senator">Senator</option>
+              <option value="Emperor">Emperor</option>
+            </select>
+            <button class="action" style="width:100%; margin-top:4px;" onclick="removePlayer('${player.id}')">Remove</button>
+          </div>
+        </div>`).join('');
+      document.getElementById('playerList').innerHTML = playerList || '<div class="card">No players registered.</div>';
+    }
+
+    function addPlayer() {
+      if (!requireAdmin('add players')) return;
+      const name = document.getElementById('newPlayerName').value.trim();
+      const rank = document.getElementById('newPlayerRank').value;
+      if (!name) { log('Player name required.'); return; }
+      const nextId = `player${Object.keys(state.players).length + 1}`;
+      state.players[nextId] = { id: nextId, name, rank };
+      document.getElementById('newPlayerName').value = '';
+      log(`Player "${name}" registered as ${rank}.`);
+      saveState();
+      renderPlayers();
+    }
+
+    function assignRank(id, newRank) {
+      if (!requireAdmin('assign ranks')) return;
+      if (!newRank) return;
+      const player = state.players[id];
+      if (!player) return;
+      const oldRank = player.rank;
+      player.rank = newRank;
+      log(`Player "${player.name}" promoted from ${oldRank} to ${newRank}.`);
+      saveState();
+      renderPlayers();
+    }
+
+    function removePlayer(id) {
+      if (!requireAdmin('remove players')) return;
+      const player = state.players[id];
+      if (!player) return;
+      if (!confirm(`Remove player "${player.name}"?`)) return;
+      delete state.players[id];
+      log(`Player "${player.name}" has been removed.`);
+      saveState();
+      renderPlayers();
     }
 
     function renderLogs() {
