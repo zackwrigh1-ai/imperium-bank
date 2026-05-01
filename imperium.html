@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Imperium Bank • Roman Aurum System</title>
+  <title>Imperium Bank • Roman Denarii System</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(180deg,#100b05,#1b170c); color: #f6e3a1; }
@@ -31,9 +31,9 @@
 </head>
 <body>
   <header>
-    <h1>IMPERIUM BANK • AURUM COMMAND</h1>
+    <h1>IMPERIUM BANK • DENARII COMMAND</h1>
     <nav>
-      <button onclick="switchView('legions')">Aurum Branches</button>
+      <button onclick="switchView('legions')">Denarii Branches</button>
       <button onclick="switchView('tribute')">Tribute</button>
       <button onclick="switchView('senate')">Senate</button>
       <button onclick="switchView('logs')">Oracle Logs</button>
@@ -43,14 +43,14 @@
 
   <div class="container">
     <section id="legions" class="panel active">
-      <h2>Aurum Branches</h2>
+      <h2>Denarii Branches</h2>
       <div class="card-row">
         <div class="card">
           <h3>Imperial Treasury</h3>
-          <p class="small">Current Aurum reserves available to the bank.</p>
-          <div class="status" id="treasuryValue">0 aurum</div>
+          <p class="small">Current Denarii reserves available to the bank.</p>
+          <div class="status" id="treasuryValue">0 denarii</div>
           <div style="margin-top:14px;">
-            <label for="treasuryAmount">Add or withdraw aurum</label>
+            <label for="treasuryAmount">Add or withdraw denarii</label>
             <input id="treasuryAmount" type="number" min="0" placeholder="Amount" />
             <button class="action wide-button" onclick="adjustTreasury()">Update Treasury</button>
           </div>
@@ -211,8 +211,8 @@
       renderLogs();
     }
 
-    function formatAurum(value) {
-      return `${Math.round(value)} aurum`;
+    function formatDenarii(value) {
+      return `${Math.round(value)} denarii`;
     }
 
     function requireAdmin(action) {
@@ -239,7 +239,7 @@
     }
 
     function renderBranches() {
-      document.getElementById('treasuryValue').textContent = formatAurum(state.treasury);
+      document.getElementById('treasuryValue').textContent = formatDenarii(state.treasury);
       const branchSelect = document.getElementById('branchTransferTarget');
       branchSelect.innerHTML = '';
       const branchList = Object.values(state.accounts).map(account => {
@@ -247,7 +247,7 @@
         return `
           <div class="card">
             <strong>${account.name}</strong><br>
-            Balance: ${formatAurum(account.balance)}
+            Balance: ${formatDenarii(account.balance)}
             <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
               <button class="action" onclick="adjustBranch('${account.id}', 100)">+100</button>
               <button class="action" onclick="adjustBranch('${account.id}', -100)">-100</button>
@@ -277,21 +277,21 @@
       if (Number.isNaN(value) || value === 0) { log('Enter a valid treasury amount.'); return; }
       state.treasury = Math.max(0, state.treasury + value);
       document.getElementById('treasuryAmount').value = '';
-      log(`Treasury adjusted by ${Math.round(value)} aurum.`);
+      log(`Treasury adjusted by ${Math.round(value)} denarii.`);
       saveState();
       renderBranches();
     }
 
     function transferToBranch() {
-      if (!requireAdmin('transfer aurum to a branch')) return;
+      if (!requireAdmin('transfer denarii to a branch')) return;
       const target = document.getElementById('branchTransferTarget').value;
       const amount = Number(document.getElementById('branchTransferAmount').value);
       if (!target || Number.isNaN(amount) || amount <= 0) { log('Enter a valid transfer target and amount.'); return; }
-      if (amount > state.treasury) { log('Not enough aurum in treasury.'); return; }
+      if (amount > state.treasury) { log('Not enough denarii in treasury.'); return; }
       state.treasury -= amount;
       state.accounts[target].balance += amount;
       document.getElementById('branchTransferAmount').value = '';
-      log(`Transferred ${Math.round(amount)} aurum to ${state.accounts[target].name}.`);
+      log(`Transferred ${Math.round(amount)} denarii to ${state.accounts[target].name}.`);
       saveState();
       renderBranches();
     }
@@ -304,15 +304,15 @@
       account.balance += amount;
       saveState();
       renderBranches();
-      log(`${amount >= 0 ? 'Added' : 'Removed'} ${Math.abs(amount)} aurum ${amount >= 0 ? 'to' : 'from'} ${account.name}.`);
+      log(`${amount >= 0 ? 'Added' : 'Removed'} ${Math.abs(amount)} denarii ${amount >= 0 ? 'to' : 'from'} ${account.name}.`);
     }
 
     function renderTribute() {
       document.getElementById('tributeRate').value = state.tributeRate;
       document.getElementById('provinceStatus').innerHTML = `
-        <div class="status">Wealth: ${formatAurum(state.province.wealth)}<br>Loyalty: ${state.province.loyalty}%</div>`;
+        <div class="status">Wealth: ${formatDenarii(state.province.wealth)}<br>Loyalty: ${state.province.loyalty}%</div>`;
       const ledgerHtml = state.tributeLedger.length ? state.tributeLedger.map(entry => `
-        <div class="card"><strong>${entry.when}</strong><br>${entry.amount.toFixed(0)} aurum collected</div>`).join('') : '<div class="card">No tribute has been collected yet.</div>';
+        <div class="card"><strong>${entry.when}</strong><br>${entry.amount.toFixed(0)} denarii collected</div>`).join('') : '<div class="card">No tribute has been collected yet.</div>';
       document.getElementById('tributeLedger').innerHTML = ledgerHtml;
     }
 
@@ -334,7 +334,7 @@
       state.province.loyalty = Math.max(50, state.province.loyalty - 2);
       state.tributeLedger.unshift({ when: new Date().toLocaleString(), amount });
       if (state.tributeLedger.length > 50) state.tributeLedger.pop();
-      log(`Collected ${Math.round(amount)} aurum in tribute from Italia.`);
+      log(`Collected ${Math.round(amount)} denarii in tribute from Italia.`);
       saveState();
       renderTribute();
       renderBranches();
